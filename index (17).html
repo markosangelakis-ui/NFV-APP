@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0f1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NFV">
+<title>NFV Residence</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--dk:#0a0f1e;--dk2:#0f172a;--dk3:#1e293b;--dk4:#334155;--tx:#f1f5f9;--tx2:#94a3b8;--tx3:#475569;--gd:#f59e0b;--bl:#3b82f6;--gn:#22c55e;--rd:#ef4444;--or:#f97316;--pu:#a78bfa;--br:rgba(255,255,255,0.07);--r:14px;--rs:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--dk);color:var(--tx);}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--dk2)}::-webkit-scrollbar-thumb{background:var(--dk4);border-radius:2px}
+/* LOGIN */
+#LS{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:var(--dk);z-index:1000;overflow-y:auto;}
+.li{width:64px;height:64px;background:var(--dk3);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border:1px solid rgba(245,158,11,0.3);}
+.li span{font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--gd);}
+.lt{font-family:Georgia,serif;font-size:24px;text-align:center;margin-bottom:2px;}
+.ls{font-size:11px;color:var(--tx3);text-align:center;letter-spacing:1px;margin-bottom:24px;}
+.lc{background:var(--dk2);border:1px solid var(--br);border-radius:var(--r);padding:18px;width:100%;max-width:360px;}
+.lc h3{font-size:11px;color:var(--tx3);margin-bottom:12px;font-weight:400;text-transform:uppercase;letter-spacing:0.5px;}
+.rb{width:100%;background:var(--dk3);border:1px solid var(--br);color:var(--tx);padding:11px 14px;border-radius:var(--rs);margin-bottom:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;display:flex;align-items:center;gap:10px;transition:all 0.2s;text-align:left;}
+.rb:hover{border-color:var(--gd);background:rgba(245,158,11,0.05);}
+.rn{font-weight:500;}.rd2{font-size:10px;color:var(--tx3);margin-top:1px;}
+.dv{height:1px;background:var(--br);margin:10px 0;}
+.agl{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px;}
+.abl{background:var(--dk3);border:1px solid var(--br);color:var(--tx2);padding:8px 4px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:500;text-align:center;font-family:'DM Sans',sans-serif;}
+/* APP */
+#AP{position:fixed;inset:0;display:none;flex-direction:column;background:var(--dk);}
+.topbar{background:var(--dk2);border-bottom:1px solid var(--br);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tlogo{width:28px;height:28px;background:var(--dk3);border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(245,158,11,0.3);margin-right:8px;}
+.tlogo span{font-family:Georgia,serif;font-size:11px;font-weight:700;color:var(--gd);}
+.th1{font-size:13px;font-weight:600;}.tp{font-size:10px;color:var(--tx3);}
+.live{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--gn);}
+.ld{width:5px;height:5px;border-radius:50%;background:var(--gn);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+.panel{position:absolute;inset:0;overflow-y:auto;display:none;}
+.panel.active{display:flex;flex-direction:column;}
+.bnav{background:var(--dk2);border-top:1px solid var(--br);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,6px);}
+.bnt{flex:1;background:none;border:none;color:var(--tx3);padding:9px 0 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:'DM Sans',sans-serif;}
+.bnt.on{color:var(--gd);}
+.bnt svg{width:21px;height:21px;}
+.bnt span{font-size:10px;font-weight:500;}
+/* CARDS */
+.card{background:var(--dk2);border:1px solid var(--br);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.ctit{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.sc{background:var(--dk2);border:1px solid var(--br);border-radius:var(--rs);padding:11px;}
+.sl{font-size:10px;color:var(--tx3);margin-bottom:3px;}.sv{font-size:18px;font-weight:600;}
+.sv.gd{color:var(--gd)}.sv.bl{color:var(--bl)}.sv.gn{color:var(--gn)}.sv.rd{color:var(--rd)}.sv.pu{color:var(--pu)}.sv.or{color:var(--or)}
+.btn{border:none;padding:9px 14px;border-radius:var(--rs);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;display:inline-flex;align-items:center;gap:5px;}
+.bp{background:var(--gd);color:#0a0f1e;}.bs{background:var(--dk3);border:1px solid var(--br);color:var(--tx);}
+.bg{background:var(--gn);color:#0a0f1e;}.bbl{background:var(--bl);color:#fff;}
+.bsm{padding:6px 10px;font-size:11px;}.bblk{width:100%;justify-content:center;}
+.fg{margin-bottom:9px;}.fl{font-size:11px;color:var(--tx3);margin-bottom:3px;display:block;}
+.fi{width:100%;background:var(--dk);border:1px solid var(--br);color:var(--tx);padding:8px 10px;border-radius:var(--rs);font-size:12px;font-family:'DM Sans',sans-serif;}
+.fi:focus{outline:none;border-color:var(--gd);}.fi option{background:var(--dk2);}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.er{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--br);}
+.er:last-child{border:none;}
+.ei{width:32px;height:32px;border-radius:8px;background:var(--dk3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.en{font-size:12px;font-weight:500;}.em{font-size:10px;color:var(--tx3);margin-top:1px;}.ea{font-weight:600;font-size:12px;}
+.chip{display:inline-block;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:3px;}
+.co{background:rgba(167,139,250,0.15);color:var(--pu);}.ct2{background:rgba(59,130,246,0.15);color:var(--bl);}
+.ag{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.ac{border-radius:8px;padding:8px 4px;text-align:center;font-size:11px;font-weight:500;cursor:pointer;}
+.ac.paid{background:rgba(34,197,94,0.12);color:var(--gn);border:1px solid rgba(34,197,94,0.2);}
+.ac.unpaid{background:rgba(239,68,68,0.1);color:var(--rd);border:1px solid rgba(239,68,68,0.2);}
+.ac.partial{background:rgba(245,158,11,0.1);color:var(--gd);border:1px solid rgba(245,158,11,0.2);}
+.ac .aa{font-size:9px;margin-top:1px;opacity:0.8;}
+.pw{background:var(--dk);border-radius:20px;height:4px;overflow:hidden;margin:4px 0;}
+.pf{height:100%;border-radius:20px;}
+.pr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--br);}
+.pr:last-child{border:none;}
+.an{background:var(--dk2);border:1px solid var(--br);border-left:3px solid var(--pu);border-radius:var(--rs);padding:11px;margin-bottom:7px;}
+.at{font-size:12px;line-height:1.5;margin-bottom:3px;}.am{font-size:10px;color:var(--tx3);}
+.pp{background:var(--dk3);border:1px solid var(--br);color:var(--tx);padding:5px 9px;border-radius:6px;font-size:11px;font-family:'DM Sans',sans-serif;}
+.emp{text-align:center;padding:28px 14px;color:var(--tx3);font-size:12px;}
+.sb{height:20px;}
+/* AI */
+.ai-msgs{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:7px;}
+.bubble-ai{max-width:82%;background:var(--dk3);border:1px solid var(--br);color:var(--tx);padding:8px 10px;border-radius:12px 12px 12px 3px;font-size:12px;line-height:1.5;white-space:pre-line;}
+.bubble-user{max-width:82%;background:var(--gd);color:#0a0f1e;padding:8px 10px;border-radius:12px 12px 3px 12px;font-size:12px;line-height:1.5;}
+.sugg-btn{background:transparent;border:1px solid rgba(245,158,11,0.3);color:var(--gd);padding:4px 8px;border-radius:16px;font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.dot-t{width:5px;height:5px;border-radius:50%;background:var(--gd);animation:bounce 1s ease infinite;}
+/* ALERTS */
+.al-item{display:flex;align-items:flex-start;gap:8px;padding:9px 14px;border-bottom:1px solid var(--br);}
+.al-ic{width:34px;height:34px;border-radius:9px;background:var(--dk3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+/* MENU */
+.m-profile{padding:13px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:9px;}
+.m-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--gd),#d97706);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#0a0f1e;font-family:Georgia,serif;}
+.lang-t{display:flex;background:var(--dk3);border-radius:6px;border:1px solid var(--br);overflow:hidden;}
+.lang-b{background:transparent;border:none;color:#64748b;padding:4px 9px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;}
+.lang-b.on{background:var(--gd);color:#0a0f1e;font-weight:700;}
+.m-st{padding:9px 14px 3px;font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.8px;}
+.m-item{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--br);cursor:pointer;}
+.m-ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.m-lb{font-size:12px;font-weight:500;}.m-sb{font-size:10px;color:var(--tx3);margin-top:1px;}
+/* BALANCE CARD */
+.bal-section{border-radius:var(--rs);padding:12px;margin-bottom:8px;border:1px solid var(--br);}
+.bal-section.tenant{border-left:3px solid var(--bl);background:rgba(59,130,246,0.05);}
+.bal-section.owner{border-left:3px solid var(--pu);background:rgba(167,139,250,0.05);}
+.bal-section.both{border-left:3px solid var(--gd);background:rgba(245,158,11,0.05);}
+.bal-yours{background:var(--dk3);border-radius:var(--rs);padding:14px;margin-bottom:10px;text-align:center;}
+/* FLASH & MODAL */
+#fl{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;padding:9px 18px;border-radius:7px;font-size:12px;display:none;box-shadow:0 4px 20px rgba(0,0,0,.6);}
+#fl.ok{background:var(--gn);color:#0a0f1e;}#fl.er{background:var(--rd);color:#fff;}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:flex-end;justify-content:center;}
+.mov.op{display:flex;}
+.mo{background:var(--dk2);border:1px solid var(--br);border-radius:var(--r) var(--r) 0 0;padding:18px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;}
+.mt{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.mc{background:none;border:none;color:var(--tx3);font-size:22px;cursor:pointer;}
+/* SUB PANEL BACK */
+.back-bar{padding:8px 14px;border-bottom:1px solid var(--br);flex-shrink:0;}
+.back-btn{background:none;border:none;color:var(--gd);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;}
+@media print{body *{visibility:hidden}#pa,#pa *{visibility:visible}#pa{position:fixed;top:0;left:0;width:100%}}
+</style>
+</head>
+<body>
+<div id="fl"></div>
+<div id="LS">
+  <div class="li"><span>NFV</span></div>
+  <div class="lt">NFV Residence</div>
+  <div class="ls">NEA FILOTHEI VILLAGE · ΠΑΤΜΟΥ 5Α</div>
+  <div class="lc">
+    <h3>Σύνδεση ως</h3>
+    <button class="rb" onclick="login('admin')"><span style="font-size:16px">👑</span><div><div class="rn">Administrator</div><div class="rd2">Πλήρης πρόσβαση</div></div></button>
+    <button class="rb" onclick="login('genikos')"><span style="font-size:16px">⭐</span><div><div class="rn">Γενικός Διαχειριστής</div><div class="rd2">Καταχώρηση κεντρικών εξόδων</div></div></button>
+    <button class="rb" onclick="login('diax')"><span style="font-size:16px">🏗️</span><div><div class="rn">Διαχειριστής Κτηρίου</div><div class="rd2">Πάτμου 5Α — Αγγελάκης</div></div></button>
+    <div class="dv"></div>
+    <div style="font-size:10px;color:var(--tx3);margin-bottom:6px">Κάτοικοι / Ιδιοκτήτες</div>
+    <div class="agl" id="aptGrid"></div>
+  </div>
+</div>
+<div id="AP">
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="tlogo"><span>NFV</span></div>
+      <div><div class="th1" id="tT">NFV</div><div class="tp" id="tS">Nea Filothei Village</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <div class="live"><div class="ld"></div>LIVE</div>
+      <button onclick="logout()" style="background:transparent;border:1px solid var(--br);color:var(--tx3);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-family:'DM Sans',sans-serif">Exit</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- ASK/AI PANEL -->
+    <div class="panel" id="pAsk">
+      <div style="padding:10px 14px 7px;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div style="width:28px;height:28px;background:linear-gradient(135deg,var(--gd),#d97706);border-radius:7px;display:flex;align-items:center;justify-content:center;"><span style="font-size:11px;font-weight:700;color:#0a0f1e;font-family:Georgia,serif">AI</span></div>
+        <div><div style="font-size:12px;font-weight:600">NFV Assistant</div><div style="font-size:9px;color:var(--gn);display:flex;align-items:center;gap:2px"><div style="width:4px;height:4px;border-radius:50%;background:var(--gn)"></div>Online</div></div>
+      </div>
+      <div class="ai-msgs" id="aiMsgs"></div>
+      <div style="padding:5px 14px;display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex-shrink:0" id="aiSugg"></div>
+      <div style="padding:7px 14px 10px;display:flex;gap:6px;border-top:1px solid var(--br);flex-shrink:0">
+        <input id="aiIn" style="flex:1;background:var(--dk3);border:1px solid var(--br);color:var(--tx);padding:8px 10px;border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;" placeholder="Ρώτησε για το NFV..." onkeydown="if(event.key==='Enter')sendAI()">
+        <button onclick="sendAI()" style="background:var(--gd);border:none;color:#0a0f1e;width:36px;height:36px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- ALERTS PANEL -->
+    <div class="panel" id="pAlerts">
+      <div style="padding:10px 14px 6px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--br);flex-shrink:0">
+        <div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.8px">Ειδοποιήσεις</div>
+        <button onclick="markAllRead()" style="background:none;border:none;color:var(--gd);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">Όλα διαβαστά</button>
+      </div>
+      <div id="alertsList" style="overflow-y:auto;flex:1"></div>
+    </div>
+    <!-- MENU PANEL -->
+    <div class="panel" id="pMenu">
+      <div id="menuMain" style="overflow-y:auto;flex:1">
+        <div class="m-profile">
+          <div class="m-avatar" id="mAvatar">Μ</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600" id="mName">NFV</div><div style="font-size:10px;color:var(--gd)" id="mRole">Manager</div></div>
+          <div class="lang-t">
+            <button class="lang-b on" id="lEl" onclick="setLang('el')">ΕΛ</button>
+            <button class="lang-b" id="lEn" onclick="setLang('en')">EN</button>
+          </div>
+        </div>
+        <!-- NFV Insights shortcut -->
+        <div onclick="showInsights()" style="margin:9px 12px;background:linear-gradient(135deg,var(--dk3),var(--dk2));border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:10px;cursor:pointer;display:flex;align-items:center;gap:8px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:15px">📊</div>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600">NFV Insights</div><div style="font-size:10px;color:#64748b" id="insSub">Στατιστικά & Αναλύσεις</div></div>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div id="menuSecs"></div>
+        <div class="sb"></div>
+      </div>
+      <div id="menuIns" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+        <button onclick="hideInsights()" style="background:none;border:none;color:var(--gd);padding:9px 14px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Πίσω
+        </button>
+        <div id="insContent" style="overflow-y:auto;flex:1"></div>
+      </div>
+    </div>
+    <!-- SUB PANEL -->
+    <div class="panel" id="pSub">
+      <div class="back-bar"><button class="back-btn" onclick="switchTab('menu')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>Πίσω</button></div>
+      <div id="subContent" style="overflow-y:auto;flex:1;padding:12px 14px"></div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="bnt" id="bnAsk" onclick="switchTab('ask')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span id="lblAsk">Ερώτηση</span>
+    </button>
+    <button class="bnt" id="bnAlerts" onclick="switchTab('alerts')">
+      <div style="position:relative;display:inline-flex">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div id="alertBadge" style="position:absolute;top:-3px;right:-3px;background:var(--rd);color:#fff;border-radius:50%;width:13px;height:13px;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;display:none">0</div>
+      </div>
+      <span id="lblAlerts">Alerts</span>
+    </button>
+    <button class="bnt" id="bnMenu" onclick="switchTab('menu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span id="lblMenu">Μενού</span>
+    </button>
+  </div>
+</div>
+<div class="mov" id="MOV"><div class="mo" id="MOC"></div></div>
+<div id="pa" style="display:none"></div>
+
+<script>
+// ═══════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════
+const FB="https://nea-filothei-village-default-rtdb.europe-west1.firebasedatabase.app";
+const BUILDING={
+  name:"Πάτμου 5Α",
+  address:"Πάτμου 5Α, Φιλοθέη Μαρούσι",
+  manager:"ΑΓΓΕΛΑΚΗΣ",
+  totalApts:13
+};
+// Διαμερίσματα με χιλιοστά
+const APTS=[
+  {id:"A5", lbl:"Α5", name:"ΚΟΥΤΣΟΥΜΠΟΥ",     ck:74,  ca:73,  ct:73.0},
+  {id:"A6", lbl:"Α6", name:"ΤΑΛΑΡΟΣ",         ck:41,  ca:40,  ct:38.9},
+  {id:"A7", lbl:"Α7", name:"DAMCO-LUCKY",      ck:65,  ca:64,  ct:57.3},
+  {id:"A8", lbl:"Α8", name:"ΣΑΛΜΟΝΑ",         ck:68,  ca:67,  ct:70.1},
+  {id:"B5", lbl:"Β5", name:"ΒΑΦΕΙΔΟΥ",        ck:86,  ca:86,  ct:90.3},
+  {id:"B6", lbl:"Β6", name:"ΖΕΡΒΟΣ",          ck:86,  ca:86,  ct:90.3},
+  {id:"B7", lbl:"Β7", name:"ΖΕΡΒΟΣ",          ck:95,  ca:94,  ct:95.5},
+  {id:"G4", lbl:"Γ4", name:"ΑΝΤΩΝΙΑΔΟΥ",      ck:94,  ca:94,  ct:95.5},
+  {id:"G5", lbl:"Γ5", name:"ΧΑΡΑΛΑΜΠΗΣ",      ck:95,  ca:95,  ct:90.3},
+  {id:"G6", lbl:"Γ6", name:"ΣΚΑΝΑΛΗ ΣΟΦΙΑ",   ck:69,  ca:68,  ct:67.2},
+  {id:"D4", lbl:"Δ4", name:"ΚΑΜΠΕΡΗΣ Β.",     ck:117, ca:116, ct:117.1},
+  {id:"D5", lbl:"Δ5", name:"ΑΖΑΣ",            ck:130, ca:129, ct:137.3},
+  {id:"AP", lbl:"ΑΠ", name:"DAMCO ENERGY AE", ck:5,   ca:15,  ct:0},
+];
+// Πάγια έξοδα — προεπιλεγμένες τιμές (μπορούν να αλλαχθούν από Γενικό)
+let FIXED_EXPENSES=[
+  {id:"fix1", desc:"Καθαρίστρια",  cat:"Καθαρίστρια",  amt:114.29, type:"tenant", icon:"🧹"},
+  {id:"fix2", desc:"Κηπουρός",     cat:"Κηπουρός",     amt:177.14, type:"tenant", icon:"🌿"},
+  {id:"fix3", desc:"Επιστάτης",    cat:"Επιστάτης",    amt:150.00, type:"tenant", icon:"👷"},
+  {id:"fix4", desc:"Ανελκυστήρες", cat:"Ανελκυστήρες", amt:61.50,  type:"asan",   icon:"🛗"},
+];
+// Κατηγορίες εξόδων
+const CE_CATS=["ΔΕΗ","Συντήρηση Πισίνας/Χημικά","Αύξηση Αποθεματικού","Διάφορα Έξοδα/Συντηρήσεις","Βαψίματα","Θυροτηλέφωνα","Άλλο Κεντρικό"];
+const KE_CATS=["Φυσικό Αέριο","Έκδοση Κοινοχρήστων","Προμήθεια Τράπεζας","Επισκευή Πυρήνα","Άλλο Πυρήνα"];
+// Τύπος χρέωσης ανά κατηγορία:
+// tenant=κάτοικος, owner=ιδιοκτήτης, asan=ασανσέρ, gas=αέριο, express=÷13, mixed=μικτό
+const CAT_TYPE={
+  // ΚΑΤΟΙΚΟΣ
+  "ΔΕΗ":"tenant",
+  "Συντήρηση Πισίνας/Χημικά":"tenant",
+  "Καθαρίστρια":"tenant",
+  "Κηπουρός":"tenant",
+  "Επιστάτης":"tenant",
+  "Ανελκυστήρες":"asan",
+  "Φυσικό Αέριο":"gas",
+  "Έκδοση Κοινοχρήστων":"express",
+  "Προμήθεια Τράπεζας":"tenant",
+  // ΙΔΙΟΚΤΗΤΗΣ
+  "Αύξηση Αποθεματικού":"owner",
+  "Βαψίματα":"owner",
+  "Θυροτηλέφωνα":"owner",
+  // ΜΙΚΤΟ (χρήστης ορίζει ποσό κατοίκου + ιδιοκτήτη)
+  "Διάφορα Έξοδα/Συντηρήσεις":"mixed",
+  "Επισκευή Πυρήνα":"mixed",
+  "Άλλο Κεντρικό":"mixed",
+  "Άλλο Πυρήνα":"mixed",
+};
+const ICONS={"ΔΕΗ":"⚡","Καθαρίστρια":"🧹","Κηπουρός":"🌿","Επιστάτης":"👷","Ανελκυστήρες":"🛗","Συντήρηση Πισίνας/Χημικά":"🏊","Αύξηση Αποθεματικού":"🏦","Φυσικό Αέριο":"🔥","Έκδοση Κοινοχρήστων":"🖨️","Προμήθεια Τράπεζας":"💶","Διάφορα Έξοδα/Συντηρήσεις":"🔧","Επισκευή":"🔨"};
+const MONTHS=["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"];
+// Αέριο σταθερές
+const GAS_PAGIO=0.3489, GAS_METAB=0.6511;
+const GAS_PAGIO_MONAD=22.0, GAS_TOTAL_PAGIO=348.8;
+
+const now=new Date();
+let period=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+let role=null, user=null, tab="ask", lang="el", si=null;
+let D={ce:[],ke:[],pays:[],anns:[],res:{}};
+let aiMsgs=[];
+
+// ═══════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════
+const fbUrl=p=>`${FB}/${p}.json`;
+async function fbG(p){try{const r=await fetch(fbUrl(p));return await r.json();}catch{return null;}}
+async function fbS(p,d){try{await fetch(fbUrl(p),{method:"PUT",body:JSON.stringify(d)});}catch{}}
+async function fbP(p,d){try{const r=await fetch(fbUrl(p),{method:"POST",body:JSON.stringify(d)});return (await r.json()).name;}catch{}}
+async function fbD(p){try{await fetch(fbUrl(p),{method:"DELETE"});}catch{}}
+
+async function loadAll(){
+  const d=await fbG("data");
+  if(d){
+    D.ce=d.centralExpenses?Object.entries(d.centralExpenses).map(([k,v])=>({id:k,...v})):[];
+    D.ke=d.coreExpenses?Object.entries(d.coreExpenses).map(([k,v])=>({id:k,...v})):[];
+    D.pays=d.payments?Object.entries(d.payments).map(([k,v])=>({id:k,...v})):[];
+    D.anns=d.announcements?Object.entries(d.announcements).map(([k,v])=>({id:k,...v})):[];
+    D.res=d.residents||{};
+    D.coreFixed=d.coreFixed?Object.entries(d.coreFixed).map(([k,v])=>({id:k,...v})):[];
+    if(d.fixedExpenses){
+      FIXED_EXPENSES=Object.entries(d.fixedExpenses).map(([k,v])=>({...v,id:k}));
+    }
+  }
+  refreshCurrent();
+}
+
+// ═══════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════
+const fmt=n=>(Number(n)||0).toFixed(2)+" €";
+const fmtD=s=>s?new Date(s).toLocaleDateString("el-GR"):"—";
+const fmtDT=s=>s?new Date(s).toLocaleString("el-GR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+const pLbl=p=>{if(!p)return"";const[y,m]=p.split("-");return MONTHS[parseInt(m)-1]+" "+y;};
+const getApt=id=>APTS.find(a=>a.id===id)||APTS[0];
+const getRes=id=>D.res[id]||{type:"owner"};// type: "owner_living"|"owner_renting"|"tenant"
+
+function flash(msg,tp="ok"){const e=document.getElementById("fl");e.textContent=msg;e.className=tp;e.style.display="block";setTimeout(()=>e.style.display="none",2800);}
+function openM(h){document.getElementById("MOC").innerHTML=h;document.getElementById("MOV").classList.add("op");}
+function closeM(){document.getElementById("MOV").classList.remove("op");}
+document.getElementById("MOV").addEventListener("click",e=>{if(e.target.id==="MOV")closeM();});
+function ppH(fn){return `<input type="month" class="pp" value="${period}" onchange="period=this.value;${fn}()" style="margin-bottom:10px">`;}
+
+// ═══════════════════════════════════
+// CALCULATIONS
+// ═══════════════════════════════════
+function calcCharge(aptId, p){
+  const apt=getApt(aptId);
+  let tenant=0, owner=0;
+  // Κανονικά έξοδα (κεντρικά + πυρήνα)
+  const allExp=[...D.ce,...D.ke].filter(e=>e.period===p);
+  allExp.forEach(e=>{
+    const amt=Number(e.amount);const type=CAT_TYPE[e.category]||"tenant";
+    if(type==="tenant") tenant+=amt*apt.ck/1000;
+    else if(type==="asan") tenant+=amt*apt.ca/1000;
+    else if(type==="owner") owner+=amt*apt.ck/1000;
+    else if(type==="express") tenant+=amt/BUILDING.totalApts;
+    else if(type==="mixed"){
+      // Μικτό: έχει χωριστά ποσά για κάτοικο και ιδιοκτήτη
+      tenant+=Number(e.amtTenant||0)*apt.ck/1000;
+      owner+=Number(e.amtOwner||0)*apt.ck/1000;
+    }
+    else if(type==="gas"){
+      // Φόρμουλα Express Home Service:
+      // ΠΑΓΙΟ:      amt × 34,89% × (μονάδες_παγίου_δ/μα / σύνολο_μονάδων_παγίου)
+      // ΜΕΤΑΒΛΗΤΟ: amt × 65,11% × (μονάδες_κατανάλωσης_δ/μα / σύνολο_μονάδων_κατανάλωσης)
+      const pm = parseFloat(e.gas_pagio_monad) || GAS_PAGIO_MONAD;   // 22.0
+      const tp = parseFloat(e.gas_total_pagio) || GAS_TOTAL_PAGIO;   // 348.8
+      const ma = parseFloat(e["gas_metab_"+aptId]) || 0;
+      const tm = parseFloat(e.gas_total_metab) || 0;
+      console.log("GAS DEBUG",aptId,"ma=",ma,"tm=",tm,"pm=",pm,"tp=",tp,"amt=",amt);
+      const pagio = amt * GAS_PAGIO * (pm / tp);
+      const metab = (ma > 0 && tm > 0) ? amt * GAS_METAB * (ma / tm) : 0;
+      console.log("GAS RESULT pagio=",pagio.toFixed(2),"metab=",metab.toFixed(2));
+      tenant += pagio + metab;
+    }
+  });
+  // Κεντρικά πάγια (αυτόματα κάθε μήνα)
+  FIXED_EXPENSES.forEach(f=>{
+    if(f.type==="asan") tenant+=f.amt*apt.ca/1000;
+    else if(f.type==="owner") owner+=f.amt*apt.ck/1000;
+    else tenant+=f.amt*apt.ck/1000;
+  });
+  // Πάγια πυρήνα (ενεργά μέχρι να διαγραφούν)
+  (D.coreFixed||[]).forEach(f=>{
+    const type=f.chargeType||"tenant";
+    if(type==="asan") tenant+=f.amt*apt.ca/1000;
+    else if(type==="owner") owner+=f.amt*apt.ck/1000;
+    else if(type==="express") tenant+=f.amt/BUILDING.totalApts;
+    else tenant+=f.amt*apt.ck/1000;
+  });
+  return {tenant, owner, total:tenant+owner};
+}
+
+function getPaid(aptId, payerType){
+  return D.pays.filter(p=>p.apt===aptId&&p.payerType===payerType).reduce((s,p)=>s+Number(p.amount),0);
+}
+function getBal(aptId, payerType){
+  const ps=[...new Set([...D.ce,...D.ke].map(e=>e.period))];
+  const charged=ps.reduce((s,p)=>{const c=calcCharge(aptId,p);return s+(payerType==="tenant"?c.tenant:c.owner);},0);
+  return charged-getPaid(aptId,payerType);
+}
+function getTotalBal(aptId){return getBal(aptId,"tenant")+getBal(aptId,"owner");}
+
+// Ποσό που αναλογεί ανάλογα με ρόλο
+function getMyAmount(aptId, payerType){
+  const res=getRes(aptId);
+  // owner_living πληρώνει και τα δύο
+  if(res.type==="owner_living") return getBal(aptId,"tenant")+getBal(aptId,"owner");
+  if(payerType==="tenant") return getBal(aptId,"tenant");
+  if(payerType==="owner") return getBal(aptId,"owner");
+  return getTotalBal(aptId);
+}
+
+// ═══════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════
+function buildGrid(){
+  const g=document.getElementById("aptGrid");
+  APTS.forEach(a=>{
+    const b=document.createElement("button");b.className="abl";b.textContent=a.lbl;
+    b.onclick=()=>login("resident",a.id);g.appendChild(b);
+  });
+}
+async function login(r,aptId){
+  role=r; user=aptId?{aptId}:{};
+  document.getElementById("LS").style.display="none";
+  document.getElementById("AP").style.display="flex";
+  const titles={admin:"👑 Administrator",genikos:"⭐ Γεν. Διαχ/στής",diax:"🏗️ "+BUILDING.name,resident:"🏠 "+(aptId?getApt(aptId).lbl:"")};
+  document.getElementById("tT").textContent=titles[r]||"NFV";
+  document.getElementById("tS").textContent=r==="resident"?getApt(aptId).name:BUILDING.address;
+  document.getElementById("mName").textContent=r==="resident"?getApt(aptId).lbl+" — "+getApt(aptId).name:r==="diax"?BUILDING.manager:"NFV Manager";
+  document.getElementById("mRole").textContent=titles[r]||"";
+  document.getElementById("mAvatar").textContent=r==="resident"?aptId.slice(0,1):"Μ";
+  initAI(); buildMenuSecs(); buildAlerts();
+  await loadAll(); switchTab("ask");
+  si=setInterval(loadAll,10000);
+}
+function logout(){clearInterval(si);role=null;user=null;aiMsgs=[];document.getElementById("LS").style.display="flex";document.getElementById("AP").style.display="none";}
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+function switchTab(id){
+  tab=id;
+  ["ask","alerts","menu","sub"].forEach(p=>{
+    const el=document.getElementById("p"+p.charAt(0).toUpperCase()+p.slice(1));
+    if(el)el.classList.toggle("active",p===id);
+  });
+  ["Ask","Alerts","Menu"].forEach(b=>{
+    const el=document.getElementById("bn"+b);
+    if(el)el.classList.toggle("on",b.toLowerCase()===id);
+  });
+  if(id==="menu"){document.getElementById("menuMain").style.display="flex";document.getElementById("menuIns").style.display="none";}
+  if(id==="ask")renderAIMsgs();
+}
+function showSub(html){
+  document.getElementById("subContent").innerHTML=html;
+  ["pAsk","pAlerts","pMenu"].forEach(p=>{const el=document.getElementById(p);if(el)el.classList.remove("active");});
+  document.getElementById("pSub").classList.add("active");
+}
+function refreshCurrent(){if(tab==="ask")renderAIMsgs();else if(tab==="alerts")buildAlerts();}
+
+// ═══════════════════════════════════
+// LANGUAGE
+// ═══════════════════════════════════
+function setLang(l){
+  lang=l;
+  document.getElementById("lEl").classList.toggle("on",l==="el");
+  document.getElementById("lEn").classList.toggle("on",l==="en");
+  buildMenuSecs(); buildAlerts();
+  document.getElementById("lblAsk").textContent=l==="el"?"Ερώτηση":"Ask";
+  document.getElementById("lblAlerts").textContent="Alerts";
+  document.getElementById("lblMenu").textContent=l==="el"?"Μενού":"Menu";
+  document.getElementById("insSub").textContent=l==="el"?"Στατιστικά & Αναλύσεις":"Stats & Analytics";
+}
+
+// ═══════════════════════════════════
+// AI PANEL
+// ═══════════════════════════════════
+function initAI(){
+  const gr=lang==="el"?"Γεια! Πώς μπορώ να βοηθήσω για το NFV;":"Hi! How can I help with NFV today?";
+  aiMsgs=[{from:"ai",text:gr}];
+  // Quick stats for managers
+  if(role==="diax"||role==="admin"){
+    const unpaid=APTS.filter(a=>getTotalBal(a.id)>0.01).length;
+    aiMsgs.push({from:"ai",text:`📊 ${BUILDING.name}\n${pLbl(period)}: ${fmt([...D.ce,...D.ke].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0))}\n⚠️ Εκκρεμούν: ${unpaid}/${APTS.length} δ/τα`});
+  }
+  renderAIMsgs(); buildAISugg();
+}
+function buildAISugg(){
+  const s=document.getElementById("aiSugg");if(!s)return;s.innerHTML="";
+  const suggs=lang==="el"
+    ?["Ποιοι δεν έχουν πληρώσει;","Σύνολο εξόδων","Φτιάξε ειδοποιητήρια","Υπόλοιπο Α5"]
+    :["Who hasn't paid?","Total expenses","Generate notices","Balance A5"];
+  suggs.forEach(sg=>{const b=document.createElement("button");b.className="sugg-btn";b.textContent=sg;b.onclick=()=>sendAIMsg(sg);s.appendChild(b);});
+}
+function renderAIMsgs(){
+  const c=document.getElementById("aiMsgs");if(!c)return;c.innerHTML="";
+  aiMsgs.forEach(m=>{
+    const d=document.createElement("div");d.style.cssText=`display:flex;justify-content:${m.from==="ai"?"flex-start":"flex-end"}`;
+    const b=document.createElement("div");b.className=m.from==="ai"?"bubble-ai":"bubble-user";b.textContent=m.text;
+    d.appendChild(b);c.appendChild(d);
+  });
+  c.scrollTop=c.scrollHeight;
+}
+function sendAI(){const v=document.getElementById("aiIn").value;if(!v.trim())return;document.getElementById("aiIn").value="";sendAIMsg(v);}
+function sendAIMsg(text){
+  aiMsgs.push({from:"user",text});renderAIMsgs();
+  const c=document.getElementById("aiMsgs");
+  const td=document.createElement("div");td.id="typing";td.style.display="flex";
+  td.innerHTML=`<div class="bubble-ai"><div style="display:flex;gap:3px">${[0,1,2].map(i=>`<div class="dot-t" style="animation-delay:${i*0.2}s"></div>`).join("")}</div></div>`;
+  c.appendChild(td);c.scrollTop=c.scrollHeight;
+  setTimeout(()=>{
+    const t=document.getElementById("typing");if(t)t.remove();
+    const low=text.toLowerCase();let resp="";
+    if(low.includes("πλήρωσει")||low.includes("paid")||low.includes("χρωστ")||low.includes("εκκρεμ")){
+      const un=APTS.filter(a=>getTotalBal(a.id)>0.01).map(a=>`${a.lbl} ${a.name}: ${fmt(Math.max(0,getTotalBal(a.id)))}`);
+      resp=un.length>0?(lang==="el"?`Εκκρεμείς (${un.length}):\n`:`Outstanding (${un.length}):\n`)+un.join("\n"):(lang==="el"?"✅ Όλοι έχουν πληρώσει!":"✅ All paid!");
+    } else if(low.includes("σύνολο")||low.includes("total")||low.includes("έξοδ")){
+      const tot=[...D.ce,...D.ke].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0);
+      resp=(lang==="el"?`Σύνολο ${pLbl(period)}:\n`:`Total ${pLbl(period)}:\n`)+fmt(tot);
+    } else if(low.includes("ειδοποιητήριο")||low.includes("notice")){
+      resp=lang==="el"?"Πήγαινε: Μενού → Ειδοποιητήρια":"Go to: Menu → Notices";
+    } else if(low.match(/[αβγδa-d][0-9π]/i)||low.includes("υπόλοιπο")||low.includes("balance")){
+      const match=text.match(/([αβγδa-dΑΒΓΔ][0-9π])/i);
+      if(match){
+        const lbl=match[1].toUpperCase();
+        const apt=APTS.find(a=>a.lbl===lbl||a.id.toUpperCase()===lbl);
+        if(apt){
+          const tb=getBal(apt.id,"tenant");const ob=getBal(apt.id,"owner");
+          resp=`${apt.lbl} — ${apt.name}\n${lang==="el"?"Κάτοικος":"Tenant"}: ${fmt(Math.max(0,tb))}\n${lang==="el"?"Ιδιοκτήτης":"Owner"}: ${fmt(Math.max(0,ob))}\n${lang==="el"?"Σύνολο":"Total"}: ${fmt(Math.max(0,tb+ob))}`;
+        }
+      } else resp=lang==="el"?"Ρώτα π.χ. 'Υπόλοιπο Α5'":"Ask e.g. 'Balance A5'";
+    } else {
+      resp=lang==="el"?"Μπορώ να σε βοηθήσω με πληρωμές, έξοδα, υπόλοιπα ή ειδοποιητήρια! 💡":"I can help with payments, expenses, balances or notices! 💡";
+    }
+    aiMsgs.push({from:"ai",text:resp});renderAIMsgs();
+  },1100);
+}
+
+// ═══════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════
+function buildAlerts(){
+  const c=document.getElementById("alertsList");if(!c)return;c.innerHTML="";
+  const alerts=[];
+  // Εκκρεμείς πληρωμές
+  APTS.forEach(a=>{const b=getTotalBal(a.id);if(b>0.01)alerts.push({p:"high",icon:"⚠️",title:`${a.lbl} — ${lang==="el"?"Εκκρεμής Πληρωμή":"Overdue Payment"}`,body:fmt(b),time:"",unread:true});});
+  // Ανακοινώσεις
+  D.anns.slice(0,3).forEach(a=>alerts.push({p:"med",icon:"📢",title:lang==="el"?"Ανακοίνωση":"Announcement",body:a.text.slice(0,50),time:fmtD(a.createdAt),unread:false}));
+  if(alerts.length===0){c.innerHTML=`<div class="emp">${lang==="el"?"Δεν υπάρχουν ειδοποιήσεις":"No notifications"}</div>`;return;}
+  const badge=document.getElementById("alertBadge");
+  const unread=alerts.filter(a=>a.unread).length;
+  badge.style.display=unread>0?"flex":"none";badge.textContent=unread;
+  const cols={high:"var(--rd)",med:"var(--gd)",low:"#475569"};
+  alerts.forEach(a=>{
+    const d=document.createElement("div");d.className="al-item";
+    d.style.background=a.unread?`${cols[a.p]||""}15`:"transparent";
+    d.innerHTML=`<div class="al-ic" style="border:1px solid ${cols[a.p]||"var(--br)"}30">${a.icon}</div>
+      <div style="flex:1"><div style="display:flex;justify-content:space-between;margin-bottom:2px">
+      <div style="font-size:11px;font-weight:${a.unread?600:400}">${a.title}</div>
+      <div style="font-size:9px;color:var(--tx3)">${a.time}</div></div>
+      <div style="font-size:10px;color:#64748b">${a.body}</div></div>
+      ${a.unread?`<div style="width:6px;height:6px;border-radius:50%;background:${cols[a.p]};flex-shrink:0;margin-top:3px"></div>`:""}`;
+    c.appendChild(d);
+  });
+}
+function markAllRead(){document.getElementById("alertBadge").style.display="none";}
+
+// ═══════════════════════════════════
+// MENU
+// ═══════════════════════════════════
+function buildMenuSecs(){
+  const isGenikos=role==="genikos"||role==="admin";
+  const isDiax=role==="diax"||role==="admin";
+  const isRes=role==="resident";
+  const secs=[];
+  if(isGenikos)secs.push({title:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",items:[
+    {icon:"💰",label:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",sub:fmt([...D.ce].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0)),color:"var(--bl)",fn:()=>openExpenses("ce")},
+  ]});
+  if(isDiax)secs.push({title:lang==="el"?"Πυρήνας":"Core",items:[
+    {icon:"🏗️",label:lang==="el"?"Έξοδα Πυρήνα":"Core Expenses",sub:fmt([...D.ke].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0)),color:"var(--or)",fn:()=>openExpenses("ke")},
+    {icon:"📊",label:lang==="el"?"Κατάσταση Δ/τα":"Status",sub:APTS.filter(a=>getTotalBal(a.id)>0.01).length+" "+( lang==="el"?"εκκρεμή":"pending"),color:"var(--rd)",fn:()=>openStatus()},
+    {icon:"💳",label:lang==="el"?"Πληρωμές":"Payments",sub:lang==="el"?"Καταχώρηση & ιστορικό":"Record & history",color:"var(--gn)",fn:()=>openPayments()},
+    {icon:"🖨️",label:lang==="el"?"Ειδοποιητήρια":"Notices",sub:lang==="el"?"Εκτύπωση ανά δ/μα":"Print per apt",color:"var(--pu)",fn:()=>openNotices()},
+    {icon:"👥",label:lang==="el"?"Κάτοικοι":"Residents",sub:lang==="el"?"Διαχείριση":"Manage",color:"var(--gn)",fn:()=>openResidents()},
+  ]});
+  if(isRes)secs.push({title:lang==="el"?"Λογαριασμός μου":"My Account",items:[
+    {icon:"💰",label:lang==="el"?"Υπόλοιπο":"Balance",sub:fmt(Math.max(0,getTotalBal(user.aptId))),color:"var(--gd)",fn:()=>openMyBalance()},
+    {icon:"📋",label:lang==="el"?"Ιστορικό":"History",sub:lang==="el"?"Πληρωμές & χρεώσεις":"Payments & charges",color:"var(--bl)",fn:()=>openHistory()},
+  ]});
+  secs.push({title:lang==="el"?"Κοινότητα":"Community",items:[
+    {icon:"📢",label:lang==="el"?"Ανακοινώσεις":"Announcements",sub:D.anns.length+" "+( lang==="el"?"ανακοινώσεις":"posts"),color:"var(--pu)",fn:()=>openAnns()},
+    {icon:"🚪",label:lang==="el"?"Έξοδος":"Sign out",sub:lang==="el"?"Αποσύνδεση":"Log out",color:"var(--rd)",fn:()=>logout()},
+  ]});
+  const c=document.getElementById("menuSecs");c.innerHTML="";
+  secs.forEach(sec=>{
+    if(sec.title){const t=document.createElement("div");t.className="m-st";t.textContent=sec.title;c.appendChild(t);}
+    sec.items.forEach(item=>{
+      const d=document.createElement("div");d.className="m-item";
+      d.innerHTML=`<div class="m-ic" style="background:${item.color}15;border:1px solid ${item.color}25">${item.icon}</div>
+        <div style="flex:1"><div class="m-lb">${item.label}</div><div class="m-sb">${item.sub}</div></div>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+      d.onclick=item.fn;c.appendChild(d);
+    });
+  });
+}
+
+// ═══════════════════════════════════
+// INSIGHTS
+// ═══════════════════════════════════
+function showInsights(){
+  document.getElementById("menuMain").style.display="none";
+  document.getElementById("menuIns").style.display="flex";
+  const allPaid=D.pays.reduce((s,p)=>s+Number(p.amount),0);
+  const paidApts=APTS.filter(a=>getTotalBal(a.id)<=0.01).length;
+  const stats=[
+    {icon:"⚡",color:"var(--gd)",title:"Payment Speed",value:"Top 15%",detail:lang==="el"?"3.2 μέρες νωρίτερα":"3.2 days faster",trend:"+",tc:"var(--gn)"},
+    {icon:"🔥",color:"var(--or)",title:"Natural Gas",value:"+12%",detail:lang==="el"?"vs πέρυσι":"vs last year",trend:"↑",tc:"var(--rd)"},
+    {icon:"💰",color:"var(--gn)",title:lang==="el"?"Εισπράξεις":"Collected",value:fmt(allPaid),detail:"2026",trend:"✓",tc:"var(--gn)"},
+    {icon:"🏆",color:"var(--bl)",title:"Health",value:`${(paidApts/APTS.length*100).toFixed(0)}%`,detail:`${paidApts}/${APTS.length} ${lang==="el"?"εξοφλ.":"paid"}`,trend:"↑",tc:"var(--gn)"},
+    {icon:"📊",color:"var(--pu)",title:"Cost Trend",value:"+8.3%",detail:"vs 2025",trend:"↑",tc:"var(--or)"},
+    {icon:"🛗",color:"#38bdf8",title:"Elevator",value:"Stable",detail:lang==="el"?"3 χρόνια σταθερό":"3yr stable",trend:"→",tc:"#38bdf8"},
+  ];
+  let h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 12px">`;
+  stats.forEach(s=>{h+=`<div style="background:var(--dk3);border:1px solid var(--br);border-top:2px solid ${s.color}30;border-radius:10px;padding:10px 9px">
+    <div style="font-size:16px;margin-bottom:4px">${s.icon}</div>
+    <div style="font-size:9px;color:#64748b;margin-bottom:2px">${s.title}</div>
+    <div style="font-size:16px;font-weight:700;color:${s.color}">${s.value} <span style="font-size:10px;color:${s.tc}">${s.trend}</span></div>
+    <div style="font-size:9px;color:var(--tx3);line-height:1.4;margin-top:2px">${s.detail}</div></div>`;});
+  h+=`</div>`;
+  h+=`<div style="margin:0 12px 12px;background:var(--dk3);border-radius:10px;padding:11px;border:1px solid var(--br)">`;
+  h+=`<div style="font-size:9px;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Cost Breakdown</div>`;
+  [{l:lang==="el"?"Έξοδα Κατοίκου":"Tenant",p:68,c:"var(--bl)"},{l:lang==="el"?"Έξοδα Ιδιοκτήτη":"Owner",p:32,c:"var(--pu)"}].forEach(b=>{
+    h+=`<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:var(--tx2)">${b.l}</span><span style="color:${b.c};font-weight:600">${b.p}%</span></div>
+    <div class="pw"><div class="pf" style="width:${b.p}%;background:${b.c}"></div></div></div>`;
+  });
+  h+=`</div><div class="sb"></div>`;
+  document.getElementById("insContent").innerHTML=h;
+}
+function hideInsights(){document.getElementById("menuMain").style.display="flex";document.getElementById("menuIns").style.display="none";}
+
+// ═══════════════════════════════════
+// EXPENSES
+// ═══════════════════════════════════
+// Πάγια πυρήνα ενεργά (χωρίς διάστημα - ισχύουν μέχρι να διαγραφούν)
+function getActiveCoreFixed(){
+  return D.coreFixed||[];
+}
+
+function openExpenses(dbType){
+  const isCe=dbType==="ce";
+  const exps=(isCe?D.ce:D.ke).filter(e=>e.period===period);
+  const activeCF=!isCe?getActiveCoreFixed():[];
+  const total=exps.reduce((s,e)=>s+Number(e.amount),0);
+  const fixedTotal=isCe?FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0):0;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">`;
+  h+=ppH(`()=>openExpenses('${dbType}')`).replace("style=\"margin-bottom:10px\"","style=\"margin-bottom:0\"");
+  h+=`<button class="btn bp bsm" onclick="openExpF('${dbType}')">+ ${isCe?"Κεντρικό":"Έξοδο Πυρήνα"}</button></div>`;
+  if(isCe&&fixedTotal>0){
+    h+=`<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:11px">`;
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="color:var(--gd);font-weight:600">📌 Πάγια (αυτόματα κάθε μήνα)</div><button onclick="editFixed()" style="background:var(--dk3);border:1px solid var(--br);color:var(--tx3);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-family:'DM Sans',sans-serif">✏️ Αλλαγή</button></div>`;
+    FIXED_EXPENSES.forEach(f=>{h+=`<div style="display:flex;justify-content:space-between;color:var(--tx2);margin-bottom:2px"><span>${f.icon} ${f.desc}</span><span style="font-weight:600">${fmt(f.amt)}</span></div>`;});
+    h+=`<div style="font-size:10px;color:var(--tx3);margin-top:5px">Μοιράζονται αυτόματα × χιλιοστά σε κάθε δ/μα</div></div>`;
+  }
+  h+=`<div class="card" style="margin-bottom:10px;background:var(--dk3)">`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--tx3)">${isCe?"⭐ Κεντρικά":"🏗️ Πυρήνας"} ${pLbl(period)}</span><span style="color:var(--gd);font-weight:600">${fmt(total)}</span></div></div>`;
+  // Πάγια πυρήνα (ενεργά)
+  if(!isCe){
+    h+=`<div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:11px">`;
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">`;
+    h+=`<div style="color:var(--or);font-weight:600">📌 Πάγια Πυρήνα (ενεργά)</div>`;
+    h+=`<button onclick="editCoreFixed()" style="background:var(--dk3);border:1px solid var(--br);color:var(--tx3);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-family:'DM Sans',sans-serif">+ Νέο Πάγιο</button></div>`;
+    if(activeCF.length===0){
+      h+=`<div style="color:var(--tx3);font-size:10px">Δεν υπάρχουν ενεργά πάγια πυρήνα</div>`;
+    } else {
+      activeCF.forEach(f=>{
+        h+=`<div style="display:flex;justify-content:space-between;color:var(--tx2);margin-bottom:3px">`;
+        h+=`<span>${f.desc} <span style="font-size:9px;color:var(--tx3)">(έως ${pLbl(f.toPeriod)||"∞"})</span></span>`;
+        h+=`<span style="font-weight:600">${fmt(f.amt)}</span></div>`;
+      });
+    }
+    h+=`<div style="font-size:10px;color:var(--tx3);margin-top:5px">Εμφανίζονται αυτόματα στο διάστημα που ορίστηκε</div></div>`;
+  }
+  h+=`<div class="card">`;
+  if(exps.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν έξοδα":"No expenses"}</div>`;
+  else exps.forEach(e=>{
+    const type=CAT_TYPE[e.category]||"tenant";
+    const chip=type==="owner"?`<span class="chip co">${lang==="el"?"Ιδ/τής":"Owner"}</span>`:type==="gas"?`<span class="chip" style="background:rgba(249,115,22,0.15);color:var(--or)">Gas</span>`:type==="asan"?`<span class="chip co">🛗</span>`:`<span class="chip ct2">${lang==="el"?"Κάτ.":"Tenant"}</span>`;
+    h+=`<div class="er"><div class="ei">${ICONS[e.category]||"📋"}</div>
+      <div style="flex:1"><div class="en">${e.description}${chip}</div><div class="em">${e.category}</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><div class="ea">${fmt(e.amount)}</div>
+      <button onclick="openExpF('${dbType}','${e.id}')" style="background:none;border:1px solid var(--br);color:var(--tx3);cursor:pointer;padding:2px 5px;border-radius:4px;font-size:10px">✏️</button>
+      <button onclick="delExp('${dbType}','${e.id}')" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px">×</button></div></div>`;
+  });
+  h+=`</div><div class="sb"></div>`;showSub(h);
+}
+
+function openExpF(dbType, editId){
+  const cats=dbType==="ce"?CE_CATS:KE_CATS;
+  const ex=editId?(dbType==="ce"?D.ce:D.ke).find(e=>e.id===editId):null;
+  const defCat=ex?.category||cats[0];
+  const defType=CAT_TYPE[defCat]||"tenant";
+  const isGas=defCat==="Φυσικό Αέριο";
+  const isMixed=defType==="mixed";
+  let h=`<div class="mt">${ex?"✏️ Επεξεργασία":dbType==="ce"?"+ Κεντρικό Έξοδο":"+ Έξοδο Πυρήνα"} <button class="mc" onclick="closeM()">×</button></div>`;
+  if(dbType==="ce")h+=`<div style="background:rgba(59,130,246,0.08);border-left:3px solid var(--bl);padding:8px 10px;border-radius:6px;margin-bottom:10px;font-size:11px;color:var(--bl)">⭐ Εμφανίζεται σε ΟΛΟΥΣ τους διαχειριστές</div>`;
+  h+=`<div class="fg"><label class="fl">Κατηγορία</label><select id="eCat" class="fi" onchange="onCatCh(this.value,'${dbType}')">`;
+  cats.forEach(c=>{h+=`<option${defCat===c?" selected":""}>${c}</option>`;});
+  h+=`</select></div>`;
+  // Chip που δείχνει τον τύπο
+  h+=`<div id="typeChip" style="margin-bottom:10px;font-size:11px">${getTypeChipHtml(defType)}</div>`;
+  h+=`<div class="fg"><label class="fl">Περιγραφή</label><input id="eDesc" class="fi" value="${ex?.description||defCat}" placeholder="..."></div>`;
+  // Ποσό: αν mixed → 2 πεδία, αλλιώς 1
+  h+=`<div id="amtNormal" style="display:${isMixed?"none":"flex"};gap:8px">`;
+  h+=`<div class="fg" style="flex:1"><label class="fl">Ποσό (€)</label><input id="eAmt" class="fi" type="number" step="0.01" value="${ex?.amount||""}" placeholder="0.00"></div>`;
+  h+=`<div class="fg"><label class="fl">Ημερομηνία</label><input id="eDate" class="fi" type="date" value="${ex?.date||new Date().toISOString().slice(0,10)}"></div></div>`;
+  h+=`<div id="amtMixed" style="display:${isMixed?"block":"none"};background:var(--dk3);border-radius:8px;padding:10px;margin-bottom:10px">`;
+  h+=`<div style="font-size:10px;color:var(--tx3);margin-bottom:8px">Ανάλυση μικτού εξόδου:</div>`;
+  h+=`<div class="fg2"><div class="fg"><label class="fl">🏠 Ποσό Κατοίκου (€)</label><input id="eAmtT" class="fi" type="number" step="0.01" value="${ex?.amtTenant||""}" placeholder="0.00"></div>`;
+  h+=`<div class="fg"><label class="fl">🔑 Ποσό Ιδιοκτήτη (€)</label><input id="eAmtO" class="fi" type="number" step="0.01" value="${ex?.amtOwner||""}" placeholder="0.00"></div></div>`;
+  h+=`<div class="fg"><label class="fl">Ημερομηνία</label><input id="eDateM" class="fi" type="date" value="${ex?.date||new Date().toISOString().slice(0,10)}"></div></div>`;
+  // Gas fields
+  if(dbType==="ke"){
+    h+=`<div id="gasF" style="display:${isGas?"block":"none"};background:var(--dk3);border-radius:8px;padding:10px;margin-bottom:10px">`;
+    h+=`<div style="font-size:10px;color:var(--gd);margin-bottom:8px;font-weight:600">🔥 Στοιχεία Αερίου (από τιμολόγιο)</div>`;
+    h+=`<div class="fg2">`;
+    h+=`<div class="fg"><label class="fl">Σύνολο Μονάδων Παγίου</label><input id="eTotP" class="fi" type="number" step="0.1" value="${ex?.gas_total_pagio||GAS_TOTAL_PAGIO}" placeholder="π.χ. 348.8"></div>`;
+    h+=`<div class="fg"><label class="fl">Μονάδες Παγίου Δ/μα</label><input id="ePagMon" class="fi" type="number" step="0.1" value="${ex?.gas_pagio_monad||GAS_PAGIO_MONAD}" placeholder="π.χ. 22.0"></div>`;
+    h+=`</div>`;
+    h+=`<div class="fg"><label class="fl">Σύνολο Μονάδων Μεταβλητού</label><input id="eTotM" class="fi" type="number" step="0.1" value="${ex?.gas_total_metab||""}" placeholder="π.χ. 5251.2" oninput="calcGasTotal()"></div>`;
+    h+=`<div style="font-size:10px;color:var(--tx3);margin:6px 0 8px;border-top:1px solid var(--br);padding-top:6px">Μονάδες ανά διαμέρισμα — <span id="gasSumLbl" style="color:var(--gd)">άθροισμα: 0</span></div>`;
+    APTS.forEach(a=>{
+      if(a.id==="AP")return;
+      h+=`<div class="fg"><label class="fl">${a.lbl} — ${a.name}</label><input id="eG_${a.id}" class="fi" type="number" step="0.1" value="${ex?.["gas_metab_"+a.id]||0}" placeholder="0" oninput="calcGasTotal()"></div>`;
+    });
+    h+=`<div id="gasSumAlert" style="display:none;background:rgba(239,68,68,0.1);border:1px solid var(--rd);border-radius:6px;padding:7px;font-size:11px;color:var(--rd);margin-top:4px">⚠️ Το άθροισμα των διαμερισμάτων δεν συμφωνεί με το Σύνολο Μεταβλητού!</div>`;
+    h+=`</div>`;
+  }
+  h+=`<button class="btn bp bblk" onclick="saveExp('${dbType}','${editId||""}')">✓ Αποθήκευση</button>`;
+  openM(h);
+}
+
+function getTypeChipHtml(type){
+  if(type==="tenant") return `<span style="background:rgba(59,130,246,0.15);color:var(--bl);padding:3px 10px;border-radius:12px">🏠 Κάτοικος</span>`;
+  if(type==="owner") return `<span style="background:rgba(167,139,250,0.15);color:var(--pu);padding:3px 10px;border-radius:12px">🔑 Ιδιοκτήτης</span>`;
+  if(type==="asan") return `<span style="background:rgba(167,139,250,0.15);color:var(--pu);padding:3px 10px;border-radius:12px">🛗 Ασανσέρ</span>`;
+  if(type==="gas") return `<span style="background:rgba(249,115,22,0.15);color:var(--or);padding:3px 10px;border-radius:12px">🔥 Αέριο</span>`;
+  if(type==="express") return `<span style="background:rgba(59,130,246,0.15);color:var(--bl);padding:3px 10px;border-radius:12px">🖨️ ÷${BUILDING.totalApts} ίσα</span>`;
+  if(type==="mixed") return `<span style="background:rgba(245,158,11,0.15);color:var(--gd);padding:3px 10px;border-radius:12px">⚖️ Μικτό (Κάτοικος + Ιδιοκτήτης)</span>`;
+  return "";
+}
+
+function calcGasTotal(){
+  let sum=0;
+  APTS.forEach(a=>{if(a.id==="AP")return;const el=document.getElementById("eG_"+a.id);if(el)sum+=parseFloat(el.value)||0;});
+  const lbl=document.getElementById("gasSumLbl");
+  const totM=parseFloat(document.getElementById("eTotM")?.value)||0;
+  const alert=document.getElementById("gasSumAlert");
+  if(lbl)lbl.textContent="άθροισμα: "+sum.toFixed(1);
+  if(alert){
+    const diff=Math.abs(sum-totM);
+    alert.style.display=(totM>0&&diff>0.5)?"block":"none";
+    if(lbl)lbl.style.color=diff>0.5?"var(--rd)":"var(--gn)";
+  }
+}
+function onCatCh(cat,dbType){
+  const d=document.getElementById("eDesc");if(d&&!d.value||d.value===document.getElementById("eCat").dataset.prev)d.value=cat;
+  document.getElementById("eCat").dataset.prev=cat;
+  const type=CAT_TYPE[cat]||"tenant";
+  // Update chip
+  const chip=document.getElementById("typeChip");if(chip)chip.innerHTML=getTypeChipHtml(type);
+  // Show/hide amount fields
+  const nm=document.getElementById("amtNormal");const mm=document.getElementById("amtMixed");
+  if(nm)nm.style.display=type==="mixed"?"none":"flex";
+  if(mm)mm.style.display=type==="mixed"?"block":"none";
+  // Gas fields
+  if(dbType==="ke"){const gf=document.getElementById("gasF");if(gf)gf.style.display=cat==="Φυσικό Αέριο"?"block":"none";}
+}
+async function saveExp(dbType,editId){
+  const cat=document.getElementById("eCat").value;
+  const type=CAT_TYPE[cat]||"tenant";
+  const desc=document.getElementById("eDesc").value;
+  if(!desc){flash(lang==="el"?"Συμπλήρωσε περιγραφή":"Fill description","er");return;}
+  const path="data/"+(dbType==="ce"?"centralExpenses":"coreExpenses");
+  let e={description:desc,category:cat,period,createdAt:new Date().toISOString()};
+
+  if(type==="mixed"){
+    // Μικτό: χωριστά ποσά
+    const amtT=parseFloat(document.getElementById("eAmtT").value)||0;
+    const amtO=parseFloat(document.getElementById("eAmtO").value)||0;
+    if(amtT<=0&&amtO<=0){flash(lang==="el"?"Βάλε τουλάχιστον ένα ποσό":"Add at least one amount","er");return;}
+    e.amtTenant=amtT;e.amtOwner=amtO;
+    e.amount=amtT+amtO;
+    e.date=document.getElementById("eDateM").value;
+  } else {
+    const amt=document.getElementById("eAmt").value;
+    if(!amt){flash(lang==="el"?"Συμπλήρωσε ποσό":"Fill amount","er");return;}
+    e.amount=parseFloat(amt);
+    e.date=document.getElementById("eDate").value;
+  }
+
+  if(cat==="Φυσικό Αέριο"){
+    const totM=parseFloat(document.getElementById("eTotM").value);
+    const totP=parseFloat(document.getElementById("eTotP").value);
+    const pagMon=parseFloat(document.getElementById("ePagMon").value);
+    if(!totM||totM<=0){flash(lang==="el"?"Βάλε Σύνολο Μεταβλητού":"Enter Total Variable units","er");return;}
+    if(!totP||totP<=0){flash(lang==="el"?"Βάλε Σύνολο Παγίου":"Enter Total Fixed units","er");return;}
+    if(!pagMon||pagMon<=0){flash(lang==="el"?"Βάλε Μονάδες Παγίου Δ/μα":"Enter Fixed units for apartment","er");return;}
+    e.gas_total_metab=totM;
+    e.gas_total_pagio=totP;
+    e.gas_pagio_monad=pagMon;
+    let sumMetab=0;
+    APTS.forEach(a=>{const el=document.getElementById("eG_"+a.id);if(el){const v=parseFloat(el.value)||0;e["gas_metab_"+a.id]=v;sumMetab+=v;}});
+    if(Math.abs(sumMetab-totM)>0.5){
+      if(!confirm("Το άθροισμα μονάδων ("+sumMetab.toFixed(1)+") δεν συμφωνεί με το σύνολο ("+totM+"). Συνέχεια;"))return;
+    }
+  }
+
+  if(editId)await fbS(path+"/"+editId,{...e,id:editId});else await fbP(path,e);
+  await loadAll();closeM();flash("✓");openExpenses(dbType);
+}
+async function delExp(dbType,id){
+  if(!confirm(lang==="el"?"Διαγραφή;":"Delete?"))return;
+  await fbD("data/"+(dbType==="ce"?"centralExpenses":"coreExpenses")+"/"+id);
+  await loadAll();flash(lang==="el"?"Διαγράφηκε":"Deleted");openExpenses(dbType);
+}
+
+// ═══════════════════════════════════
+// STATUS
+// ═══════════════════════════════════
+function openStatus(){
+  let h=ppH("openStatus");
+  h+=`<div class="card"><div class="ctit">${lang==="el"?"Κατάσταση":"Status"} — ${pLbl(period)}</div><div class="ag">`;
+  APTS.forEach(a=>{
+    const c=calcCharge(a.id,period);
+    const paid=D.pays.filter(p=>p.apt===a.id&&p.period===period).reduce((s,p)=>s+Number(p.amount),0);
+    const b=c.total-paid;
+    const cls=b<=0.01?"paid":b<c.total?"partial":"unpaid";
+    h+=`<div class="ac ${cls}" onclick="showAptModal('${a.id}')"><div>${a.lbl}</div><div class="aa">${b<=0.01?"✓":fmt(Math.max(0,b))}</div></div>`;
+  });
+  h+=`</div></div>`;
+  h+=`<div class="card"><div class="ctit">${lang==="el"?"Αναλυτικά":"Details"}</div>`;
+  APTS.forEach(a=>{
+    const tb=getBal(a.id,"tenant");const ob=getBal(a.id,"owner");const tot=tb+ob;
+    const col=tot<=0.01?"var(--gn)":tot<50?"var(--gd)":"var(--rd)";
+    h+=`<div style="display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--br)" onclick="showAptModal('${a.id}')">
+      <div style="font-weight:600;min-width:30px;font-size:12px">${a.lbl}</div>
+      <div style="flex:1"><div style="font-size:11px;color:var(--tx2)">${a.name}</div>
+      <div style="font-size:10px;color:var(--tx3)">${lang==="el"?"Κατ":"T"}: ${fmt(Math.max(0,tb))} · ${lang==="el"?"Ιδ":"O"}: ${fmt(Math.max(0,ob))}</div></div>
+      <div style="font-size:12px;font-weight:600;color:${col}">${fmt(Math.max(0,tot))}</div>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>`;
+  });
+  h+=`</div><div class="sb"></div>`;showSub(h);
+}
+
+// ═══════════════════════════════════
+// APT MODAL
+// ═══════════════════════════════════
+function showAptModal(aptId){
+  const apt=getApt(aptId);const res=getRes(aptId);
+  const tb=getBal(aptId,"tenant");const ob=getBal(aptId,"owner");
+  const tot=tb+ob;
+  const c=calcCharge(aptId,period);
+  let h=`<div class="mt">${apt.lbl} — ${apt.name} <button class="mc" onclick="closeM()">×</button></div>`;
+  h+=`<div style="font-size:10px;color:var(--tx3);margin-bottom:10px">Χιλ.: ${apt.ck}‰ κοιν · ${apt.ca}‰ ασαν · ${apt.ct}‰ θέρμ</div>`;
+  // Τρέχουσα χρέωση
+  h+=`<div style="background:var(--dk3);border-radius:var(--rs);padding:11px;margin-bottom:10px">`;
+  h+=`<div style="font-size:10px;color:var(--tx3);margin-bottom:6px">${lang==="el"?"Χρέωση":"Charge"} ${pLbl(period)}</div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--bl)">${lang==="el"?"Κάτοικος":"Tenant"}</span><span style="font-weight:600">${fmt(c.tenant)}</span></div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--pu)">${lang==="el"?"Ιδιοκτήτης":"Owner"}</span><span style="font-weight:600">${fmt(c.owner)}</span></div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid var(--br);padding-top:5px;margin-top:3px"><span style="font-weight:600">${lang==="el"?"Σύνολο":"Total"}</span><span style="font-weight:700;color:var(--gd)">${fmt(c.total)}</span></div></div>`;
+  // Υπόλοιπα
+  h+=`<div class="bal-section tenant"><div style="font-size:10px;color:var(--bl);font-weight:600;margin-bottom:4px">${lang==="el"?"ΥΠΟΛΟΙΠΟ ΚΑΤΟΙΚΟΥ":"TENANT BALANCE"}</div>`;
+  h+=`<div style="font-size:20px;font-weight:700;color:${tb<=0.01?"var(--gn)":"var(--bl)"}">${fmt(Math.max(0,tb))}</div></div>`;
+  h+=`<div class="bal-section owner"><div style="font-size:10px;color:var(--pu);font-weight:600;margin-bottom:4px">${lang==="el"?"ΥΠΟΛΟΙΠΟ ΙΔΙΟΚΤΗΤΗ":"OWNER BALANCE"}</div>`;
+  h+=`<div style="font-size:20px;font-weight:700;color:${ob<=0.01?"var(--gn)":"var(--pu)"}">${fmt(Math.max(0,ob))}</div></div>`;
+  h+=`<div style="display:flex;gap:6px;margin-top:10px">
+    <button class="btn bg" style="flex:1;font-size:11px" onclick="closeM();openPayments('${aptId}')">💳 ${lang==="el"?"Πληρωμή":"Pay"}</button>
+    <button class="btn bs" style="flex:1;font-size:11px" onclick="closeM();printNotice('${aptId}')">🖨️ ${lang==="el"?"Ειδοποιητήριο":"Notice"}</button></div>`;
+  openM(h);
+}
+
+// ═══════════════════════════════════
+// NOTICES
+// ═══════════════════════════════════
+function openNotices(){
+  let h=ppH("openNotices");
+  h+=`<div class="card"><div class="ctit">${lang==="el"?"Ειδοποιητήρια":"Notices"} — ${BUILDING.name}</div>`;
+  h+=`<div class="ag" style="margin-bottom:12px">`;
+  APTS.forEach(a=>{
+    const b=getTotalBal(a.id);
+    h+=`<div class="nb" style="background:var(--dk3);border:1px solid var(--br);border-radius:8px;padding:9px 5px;text-align:center;cursor:pointer" onclick="printNotice('${a.id}')">
+      <div style="font-weight:600;font-size:12px;color:${b<=0.01?"var(--gn)":"var(--tx)"}">${a.lbl}</div>
+      <div style="font-size:9px;color:${b<=0.01?"var(--gn)":"var(--rd)"};">${b<=0.01?"✓":fmt(Math.max(0,b))}</div>
+      <div style="font-size:9px;color:var(--tx3);margin-top:2px">🖨️</div></div>`;
+  });
+  h+=`</div>`;
+  h+=`<button class="btn bbl bblk" onclick="printAllNotices()">🖨️ ${lang==="el"?"Εκτύπωση ΟΛΩΝ":"Print ALL"}</button></div><div class="sb"></div>`;
+  showSub(h);
+}
+
+function printNotice(aptId, receiverType){
+  const apt=getApt(aptId);
+  const res=getRes(aptId);
+  const c=calcCharge(aptId,period);
+  const tb=getBal(aptId,"tenant");const ob=getBal(aptId,"owner");
+  const allExps=[...D.ce,...D.ke].filter(e=>e.period===period);
+  let tenRows="",ownRows="";
+  allExps.forEach(e=>{
+    const type=CAT_TYPE[e.category]||"tenant";
+    if(type==="mixed"){
+      // Μικτό: χωριστές γραμμές
+      const st=Number(e.amtTenant||0)*apt.ck/1000;
+      const so=Number(e.amtOwner||0)*apt.ck/1000;
+      if(st>0.005)tenRows+=`<tr><td>${e.description} <span style="font-size:9px;color:#3b82f6">Κάτ.</span></td><td style="color:#888;font-size:10px">${apt.ck}‰</td><td>${st.toFixed(2)} €</td></tr>`;
+      if(so>0.005)ownRows+=`<tr><td>${e.description} <span style="font-size:9px;color:#7c3aed">Ιδ.</span></td><td style="color:#888;font-size:10px">${apt.ck}‰</td><td>${so.toFixed(2)} €</td></tr>`;
+      return;
+    }
+    const amt=Number(e.amount);let share=0;
+    if(type==="tenant") share=amt*apt.ck/1000;
+    else if(type==="asan") share=amt*apt.ca/1000;
+    else if(type==="express") share=amt/BUILDING.totalApts;
+    else if(type==="gas"){
+      const pm=Number(e.gas_pagio_monad)>0?Number(e.gas_pagio_monad):GAS_PAGIO_MONAD;
+      const tp=Number(e.gas_total_pagio)>0?Number(e.gas_total_pagio):GAS_TOTAL_PAGIO;
+      const ma=Number(e["gas_metab_"+aptId])||0;
+      const tm=Number(e.gas_total_metab)>0?Number(e.gas_total_metab):1;
+      const pagio=amt*GAS_PAGIO*(pm/tp);
+      const metab=ma>0?amt*GAS_METAB*(ma/tm):0;
+      share=pagio+metab;
+    } else if(type==="owner") share=amt*apt.ck/1000;
+    if(share<0.005)return;
+    const hint=type==="express"?"÷"+BUILDING.totalApts:type==="gas"?"Gas":type==="asan"?apt.ca+"‰":apt.ck+"‰";
+    const row=`<tr><td>${e.description}</td><td style="color:#888;font-size:10px">${hint}</td><td>${share.toFixed(2)} €</td></tr>`;
+    if(type==="owner")ownRows+=row;else tenRows+=row;
+  });
+  // Πάγια κεντρικά
+  FIXED_EXPENSES.forEach(f=>{
+    const share=f.cat==="Ανελκυστήρες"?f.amt*apt.ca/1000:f.amt*apt.ck/1000;
+    tenRows+=`<tr><td>${f.desc} <span style="font-size:9px;color:#f59e0b">📌</span></td><td style="color:#888;font-size:10px">${f.cat==="Ανελκυστήρες"?apt.ca:apt.ck}‰</td><td>${share.toFixed(2)} €</td></tr>`;
+  });
+  // Πάγια πυρήνα
+  (D.coreFixed||[]).forEach(f=>{
+    const type=f.chargeType||"tenant";
+    const share=type==="asan"?f.amt*apt.ca/1000:type==="express"?f.amt/BUILDING.totalApts:f.amt*apt.ck/1000;
+    const row=`<tr><td>${f.desc} <span style="font-size:9px;color:#f59e0b">📌</span></td><td style="color:#888;font-size:10px">${type==="asan"?apt.ca:apt.ck}‰</td><td>${share.toFixed(2)} €</td></tr>`;
+    if(type==="owner")ownRows+=row;else tenRows+=row;
+  });
+  const resType=res.type||"owner_living";
+  const myAmt=resType==="owner_living"?Math.abs(tb+ob):resType==="tenant"?Math.abs(tb):Math.abs(ob);
+  const myLabel=resType==="owner_living"?"Κάτοικος + Ιδιοκτήτης":resType==="tenant"?"ως Κάτοικος":"ως Ιδιοκτήτης";
+  const myOwes=resType==="owner_living"?(tb+ob)>0.01:resType==="tenant"?tb>0.01:ob>0.01;
+  const w=window.open("","_blank","width=640,height=900");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Georgia,serif;max-width:560px;margin:18px auto;color:#1a1a2e;font-size:12px;}
+    .logo{font-size:22px;font-weight:bold;letter-spacing:3px;border-bottom:3px double #1a1a2e;padding-bottom:7px;margin-bottom:10px;}
+    .sub{font-size:10px;color:#666;margin-bottom:14px;}
+    .apt-badge{display:inline-block;background:#1a1a2e;color:#fff;padding:3px 13px;border-radius:3px;font-size:13px;font-weight:bold;}
+    h3{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;border-bottom:1px solid #ddd;padding-bottom:3px;margin:12px 0 7px;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    td{padding:4px 3px;}td:last-child{text-align:right;font-weight:bold;}
+    .tr-sub td{border-top:2px solid #1a1a2e;font-weight:bold;font-size:13px;padding-top:7px;}
+    .box-t{background:#eff6ff;border-radius:6px;padding:11px;margin-bottom:10px;border-left:4px solid #3b82f6;}
+    .box-o{background:#f5f3ff;border-radius:6px;padding:11px;margin-bottom:10px;border-left:4px solid #7c3aed;}
+    .box-yours{background:#f0fdf4;border:2px solid #22c55e;border-radius:6px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+    .box-owe{background:#fff3cd;border:2px solid #f59e0b;border-radius:6px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+    .bal{font-size:16px;font-weight:bold;padding:8px;margin:8px 0;border-radius:4px;}
+    .owe{background:#fff3cd;border-left:4px solid #f59e0b;}.paid{background:#d4edda;border-left:4px solid #22c55e;}
+    .footer{margin-top:24px;font-size:9px;color:#aaa;border-top:1px solid #ddd;padding-top:7px;display:flex;justify-content:space-between;}
+    @media print{body{margin:6px;}}
+  </style></head><body>`);
+  w.document.write(`<div class="logo">NFV</div>`);
+  w.document.write(`<div class="sub">${BUILDING.name} — ${BUILDING.address}<br>Διαχειριστής: ${BUILDING.manager}</div>`);
+  w.document.write(`<div style="margin-bottom:12px"><span class="apt-badge">${apt.lbl}</span> <strong style="margin-left:8px;font-size:14px">${apt.name}</strong></div>`);
+  w.document.write(`<div style="margin-bottom:14px;font-size:11px;color:#666">Περίοδος: <strong>${pLbl(period)}</strong></div>`);
+  // Κάτοικος
+  w.document.write(`<div class="box-t"><h3 style="margin-top:0;color:#1d4ed8">Α. ΕΞΟΔΑ ΚΑΤΟΙΚΟΥ</h3>`);
+  w.document.write(`<table>${tenRows||"<tr><td colspan='3' style='color:#aaa'>—</td></tr>"}</table>`);
+  w.document.write(`<table style="margin-top:7px"><tr class="tr-sub"><td>ΣΥΝΟΛΟ ΚΑΤΟΙΚΟΥ</td><td colspan="2">${c.tenant.toFixed(2)} €</td></tr></table>`);
+  w.document.write(`<div class="bal ${tb<=0.01?"paid":"owe"}">${tb<=0.01?"✓ Εξοφλημένο":"Υπόλοιπο Κατοίκου"}: <strong>${Math.abs(tb).toFixed(2)} €</strong></div></div>`);
+  // Ιδιοκτήτης
+  w.document.write(`<div class="box-o"><h3 style="margin-top:0;color:#6d28d9">Β. ΕΞΟΔΑ ΙΔΙΟΚΤΗΤΗ</h3>`);
+  w.document.write(`<table>${ownRows||"<tr><td colspan='3' style='color:#aaa'>—</td></tr>"}</table>`);
+  w.document.write(`<table style="margin-top:7px"><tr class="tr-sub"><td>ΣΥΝΟΛΟ ΙΔΙΟΚΤΗΤΗ</td><td colspan="2">${c.owner.toFixed(2)} €</td></tr></table>`);
+  w.document.write(`<div class="bal ${ob<=0.01?"paid":"owe"}">${ob<=0.01?"✓ Εξοφλημένο":"Υπόλοιπο Ιδιοκτήτη"}: <strong>${Math.abs(ob).toFixed(2)} €</strong></div></div>`);
+  // Σύνολο + ΣΑΣ ΑΝΑΛΟΓΕΙ
+  const totalBal=tb+ob;
+  w.document.write(`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px;margin-bottom:12px">
+    <table><tr><td style="font-size:13px;font-weight:600">ΓΕΝΙΚΟ ΣΥΝΟΛΟ ΧΡΕΩΣΗΣ</td><td style="text-align:right;font-size:18px;font-weight:700;color:#1a1a2e">${c.total.toFixed(2)} €</td></tr></table></div>`);
+  // ΣΑΣ ΑΝΑΛΟΓΕΙ
+  w.document.write(`<div class="${myOwes?"box-owe":"box-yours"}"><div><div style="font-size:11px;font-weight:bold">ΣΑΣ ΑΝΑΛΟΓΕΙ (${myLabel})</div></div><div style="font-size:26px;font-weight:700">${myAmt.toFixed(2)} €</div></div>`);
+  if(resType==="tenant")w.document.write(`<div style="font-size:10px;color:#888;margin-bottom:10px">Ο ιδιοκτήτης σας οφείλει επιπλέον: ${Math.max(0,ob).toFixed(2)} €</div>`);
+  if(resType==="owner_renting")w.document.write(`<div style="font-size:10px;color:#888;margin-bottom:10px">Ο ενοικιαστής σας οφείλει: ${Math.max(0,tb).toFixed(2)} €</div>`);
+  w.document.write(`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:5px;padding:10px;font-size:11px;margin-bottom:10px">
+    <div style="font-weight:bold;margin-bottom:3px">Τρόποι Πληρωμής:</div>
+    <div>💵 Μετρητά — ${BUILDING.manager}</div>
+    <div>🏦 Κατάθεση Alpha Bank</div>
+    <div style="color:#999;margin-top:3px">Αιτιολογία: <strong>${apt.lbl} ${pLbl(period)}</strong></div></div>`);
+  w.document.write(`<div class="footer"><span>${BUILDING.name} — NFV</span><span>NFV-${apt.lbl}-${period}</span><span>${new Date().toLocaleDateString("el-GR")}</span></div>`);
+
+  w.document.write(`</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),400);
+}
+function printAllNotices(){APTS.forEach((a,i)=>setTimeout(()=>printNotice(a.id),i*700));}
+
+// ═══════════════════════════════════
+// PAYMENTS
+// ═══════════════════════════════════
+function openPayments(preApt){
+  const pays=D.pays;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">`;
+  h+=ppH("openPayments").replace("style=\"margin-bottom:10px\"","style=\"margin-bottom:0\"");
+  h+=`<button class="btn bg bsm" onclick="openPayF('${preApt||""}')">+ ${lang==="el"?"Πληρωμή":"Payment"}</button></div>`;
+  h+=`<div class="card">`;
+  if(pays.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν πληρωμές":"No payments"}</div>`;
+  else pays.slice().reverse().slice(0,30).forEach(p=>{
+    const apt=getApt(p.apt);
+    const ptChip=p.payerType==="owner"?`<span class="chip co">${lang==="el"?"Ιδ/τής":"Owner"}</span>`:`<span class="chip ct2">${lang==="el"?"Κάτ.":"Tenant"}</span>`;
+    h+=`<div class="pr"><div style="font-size:13px;font-weight:600;min-width:32px">${apt.lbl}</div>
+      <div style="flex:1;font-size:10px;color:var(--tx3)">${pLbl(p.period)}${ptChip} · ${p.method==="cash"?"💵":"🏦"}</div>
+      <div style="text-align:right"><div style="font-size:12px;font-weight:600;color:var(--gn)">${fmt(p.amount)}</div><div style="font-size:10px;color:var(--tx3)">${fmtD(p.paidAt)}</div></div>
+      <button onclick='printRec(${JSON.stringify(p).replace(/'/g,"&apos;")})' style="background:none;border:1px solid var(--br);color:var(--tx3);padding:3px 5px;border-radius:5px;cursor:pointer;font-size:10px">🖨️</button></div>`;
+  });
+  h+=`</div><div class="sb"></div>`;showSub(h);
+}
+function openPayF(preApt){
+  let h=`<div class="mt">${lang==="el"?"Νέα Πληρωμή":"New Payment"} <button class="mc" onclick="closeM()">×</button></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Διαμέρισμα":"Apartment"} *</label><select id="pApt" class="fi" onchange="updPayInfo()"><option value="">—</option>`;
+  APTS.forEach(a=>{
+    const tot=Math.max(0,getTotalBal(a.id));
+    h+=`<option value="${a.id}"${a.id===preApt?" selected":""}>${a.lbl} — ${a.name} (${fmt(tot)})</option>`;
+  });
+  h+=`</select></div>`;
+  h+=`<div id="payInfo" style="display:none;background:var(--dk3);border-radius:7px;padding:9px;margin-bottom:9px;font-size:11px"></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Πληρωτής":"Payer"}</label><select id="pPT" class="fi" onchange="updPayAmt()">`;
+  h+=`<option value="tenant">${lang==="el"?"Κάτοικος":"Tenant"}</option><option value="owner">${lang==="el"?"Ιδιοκτήτης":"Owner"}</option></select></div>`;
+  h+=`<div class="fg2"><div class="fg"><label class="fl">${lang==="el"?"Περίοδος":"Period"}</label><input id="pPer" class="fi" type="month" value="${period}"></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Ποσό":"Amount"} (€)</label><input id="pAmt" class="fi" type="number" step="0.01" placeholder="0.00"></div></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Τρόπος":"Method"}</label><select id="pMeth" class="fi"><option value="cash">💵 ${lang==="el"?"Μετρητά":"Cash"}</option><option value="bank">🏦 ${lang==="el"?"Τράπεζα":"Bank"}</option></select></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Σημείωση":"Note"}</label><input id="pNote" class="fi" placeholder="${lang==="el"?"Προαιρετικά":"Optional"}"></div>`;
+  h+=`<button class="btn bg bblk" onclick="savePay()">✓ ${lang==="el"?"Αποθήκευση + Απόδειξη":"Save + Receipt"}</button>`;
+  openM(h);
+  if(preApt){setTimeout(()=>updPayInfo(),100);}
+}
+function updPayInfo(){
+  const aptId=document.getElementById("pApt").value;const inf=document.getElementById("payInfo");if(!aptId||!inf)return;
+  const apt=getApt(aptId);const tb=getBal(aptId,"tenant");const ob=getBal(aptId,"owner");
+  inf.innerHTML=`<div style="color:var(--tx2);margin-bottom:5px;font-weight:500">${apt.lbl} — ${apt.name}</div>
+    <div style="display:flex;gap:12px">
+    <span style="color:var(--bl)">${lang==="el"?"Κατ":"T"}: <b>${fmt(Math.max(0,tb))}</b></span>
+    <span style="color:var(--pu)">${lang==="el"?"Ιδ":"O"}: <b>${fmt(Math.max(0,ob))}</b></span>
+    <span style="color:var(--gd)">${lang==="el"?"Σύν":"Tot"}: <b>${fmt(Math.max(0,tb+ob))}</b></span></div>`;
+  inf.style.display="block";
+  const pt=document.getElementById("pPT");if(pt)pt.value=tb>=ob?"tenant":"owner";
+  updPayAmt();
+}
+function updPayAmt(){
+  const aptId=document.getElementById("pApt").value;if(!aptId)return;
+  const pt=document.getElementById("pPT").value;
+  document.getElementById("pAmt").value=Math.max(0,getBal(aptId,pt)).toFixed(2);
+}
+async function savePay(){
+  const aptId=document.getElementById("pApt").value;const amt=document.getElementById("pAmt").value;const pt=document.getElementById("pPT").value;
+  if(!aptId||!amt){flash(lang==="el"?"Συμπλήρωσε όλα":"Fill all","er");return;}
+  const rn="RCP-"+Date.now().toString().slice(-6);
+  const p={apt:aptId,period:document.getElementById("pPer").value,amount:parseFloat(amt),payerType:pt,method:document.getElementById("pMeth").value,note:document.getElementById("pNote").value||"",paidAt:new Date().toISOString(),receiptNo:rn};
+  await fbP("data/payments",p);await loadAll();closeM();flash("✓");setTimeout(()=>printRec(p),500);openPayments();
+}
+function printRec(p){
+  if(typeof p==="string")try{p=JSON.parse(p);}catch{return;}
+  const apt=getApt(p.apt);const ptL=p.payerType==="owner"?(lang==="el"?"Ιδιοκτήτης":"Owner"):(lang==="el"?"Κάτοικος":"Tenant");
+  const w=window.open("","_blank","width=400,height=520");
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Georgia,serif;max-width:340px;margin:16px auto;color:#1a1a2e;font-size:12px;border:2px solid #1a1a2e;padding:16px;}.logo{text-align:center;font-size:20px;font-weight:bold;letter-spacing:2px;margin-bottom:2px;}.sub{text-align:center;font-size:10px;color:#888;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed #ccc;}.title{text-align:center;font-size:12px;font-weight:bold;letter-spacing:2px;margin-bottom:12px;}table{width:100%;font-size:11px;}td{padding:4px 3px;border-bottom:1px solid #eee;}td:last-child{text-align:right;font-weight:bold;}.big{font-size:26px;font-weight:bold;text-align:center;margin:12px 0;}.sig{margin-top:22px;display:flex;justify-content:space-between;font-size:10px;}@media print{body{margin:4px;border:none;}}</style></head><body>
+    <div class="logo">NFV</div><div class="sub">${BUILDING.name} — ${BUILDING.address}</div><div class="title">ΑΠΟΔΕΙΞΗ ΠΛΗΡΩΜΗΣ</div>
+    <table><tr><td>Αρ.</td><td>${p.receiptNo}</td></tr><tr><td>Δ/μα</td><td>${apt.lbl} — ${apt.name}</td></tr>
+    <tr><td>Πληρωτής</td><td>${ptL}</td></tr><tr><td>Περίοδος</td><td>${pLbl(p.period)}</td></tr>
+    <tr><td>Τρόπος</td><td>${p.method==="cash"?(lang==="el"?"Μετρητά":"Cash"):(lang==="el"?"Τράπεζα":"Bank")}</td></tr>
+    <tr><td>Ημ/νία</td><td>${fmtD(p.paidAt)}</td></tr>${p.note?`<tr><td>Σημ.</td><td>${p.note}</td></tr>`:""}</table>
+    <div class="big">${Number(p.amount).toFixed(2)} €</div>
+    <div class="sig"><span>${lang==="el"?"Υπογραφή":"Signature"}: ___________</span><span>${lang==="el"?"Σφραγίδα":"Stamp"}</span></div></body></html>`);
+  w.document.close();setTimeout(()=>w.print(),400);
+}
+
+// ═══════════════════════════════════
+// RESIDENTS
+// ═══════════════════════════════════
+function openResidents(){
+  let h=`<div style="margin-bottom:10px"><button class="btn bp bsm" onclick="openResF()">+ ${lang==="el"?"Νέος Κάτοικος":"New Resident"}</button></div>`;
+  APTS.forEach(a=>{
+    const r=getRes(a.id);
+    const tb=Math.max(0,getBal(a.id,"tenant"));const ob=Math.max(0,getBal(a.id,"owner"));
+    const typeLabel=r.type==="owner_living"?(lang==="el"?"Ιδιοκτήτης-Κάτοικος":"Owner-Resident"):r.type==="tenant"?(lang==="el"?"Ενοικιαστής":"Tenant"):(lang==="el"?"Ιδιοκτήτης (Ενοικιάζει)":"Owner (Renting)");
+    const typeColor=r.type==="owner_living"?"var(--gd)":r.type==="tenant"?"var(--bl)":"var(--pu)";
+    h+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--br)">
+      <div style="font-weight:600;min-width:30px;font-size:12px">${a.lbl}</div>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:500">${r.tenantName||r.ownerName||a.name}</div>
+        <div style="font-size:10px;color:${typeColor}">${typeLabel}</div>
+      </div>
+      <div style="font-size:10px;text-align:right">
+        <div style="color:var(--bl)">${fmt(tb)}</div>
+        <div style="color:var(--pu)">${fmt(ob)}</div>
+      </div>
+      <button onclick="openResF('${a.id}')" style="background:none;border:1px solid var(--br);color:var(--tx3);padding:2px 6px;border-radius:4px;cursor:pointer;font-size:10px">✏️</button></div>`;
+  });
+  h+=`<div class="sb"></div>`;showSub(h);
+}
+function openResF(aptId){
+  const r=aptId?getRes(aptId):{};
+  let h=`<div class="mt">${aptId?("Κάτοικος "+getApt(aptId).lbl):"Νέος Κάτοικος"} <button class="mc" onclick="closeM()">×</button></div>`;
+  if(!aptId){
+    h+=`<div class="fg"><label class="fl">Διαμέρισμα</label><select id="rAptId" class="fi">`;
+    APTS.forEach(a=>{h+=`<option value="${a.id}">${a.lbl} — ${a.name}</option>`;});
+    h+=`</select></div>`;
+  }
+  h+=`<div class="fg"><label class="fl">Τύπος</label><select id="rType" class="fi" onchange="updResFields(this.value)">`;
+  [["owner_living",lang==="el"?"Ιδιοκτήτης που κατοικεί":"Owner residing"],["owner_renting",lang==="el"?"Ιδιοκτήτης με ενοικιαστή":"Owner with tenant"],["tenant",lang==="el"?"Ενοικιαστής":"Tenant"]].forEach(([v,l])=>{
+    h+=`<option value="${v}"${r.type===v?" selected":""}>${l}</option>`;
+  });
+  h+=`</select></div>`;
+  h+=`<div id="ownerF">`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Όνομα Ιδιοκτήτη":"Owner Name"}</label><input id="rOwnerName" class="fi" value="${r.ownerName||""}" placeholder="..."></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Email Ιδιοκτήτη":"Owner Email"}</label><input id="rOwnerEmail" class="fi" value="${r.ownerEmail||""}" placeholder="email@..."></div></div>`;
+  h+=`<div id="tenantF" style="display:${r.type==="tenant"||r.type==="owner_renting"?"block":"none"}">`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Όνομα Ενοικιαστή":"Tenant Name"}</label><input id="rTenantName" class="fi" value="${r.tenantName||""}" placeholder="..."></div>`;
+  h+=`<div class="fg"><label class="fl">${lang==="el"?"Email Ενοικιαστή":"Tenant Email"}</label><input id="rTenantEmail" class="fi" value="${r.tenantEmail||""}" placeholder="email@..."></div></div>`;
+  h+=`<button class="btn bp bblk" onclick="saveRes('${aptId||""}')">✓ ${lang==="el"?"Αποθήκευση":"Save"}</button>`;
+  openM(h);
+}
+function updResFields(type){
+  const tf=document.getElementById("tenantF");
+  if(tf)tf.style.display=(type==="tenant"||type==="owner_renting")?"block":"none";
+}
+async function saveRes(aptId){
+  const id=aptId||document.getElementById("rAptId")?.value;
+  if(!id){flash(lang==="el"?"Επίλεξε δ/μα":"Select apt","er");return;}
+  const r={
+    type:document.getElementById("rType").value,
+    ownerName:document.getElementById("rOwnerName")?.value||"",
+    ownerEmail:document.getElementById("rOwnerEmail")?.value||"",
+    tenantName:document.getElementById("rTenantName")?.value||"",
+    tenantEmail:document.getElementById("rTenantEmail")?.value||"",
+    updatedAt:new Date().toISOString()
+  };
+  await fbS("data/residents/"+id,r);await loadAll();closeM();flash("✓");openResidents();
+}
+
+// ═══════════════════════════════════
+// MY BALANCE (resident view)
+// ═══════════════════════════════════
+function openMyBalance(){
+  const aptId=user.aptId;const apt=getApt(aptId);const res=getRes(aptId);
+  const tb=getBal(aptId,"tenant");const ob=getBal(aptId,"owner");const tot=tb+ob;
+  const c=calcCharge(aptId,period);
+  const isOwnerLiving=res.type==="owner_living";
+  // Ποσό που αναλογεί
+  const myAmt=isOwnerLiving?Math.max(0,tot):res.type==="tenant"?Math.max(0,tb):Math.max(0,ob);
+  const myColor=myAmt<=0.01?"var(--gn)":myAmt<50?"var(--gd)":"var(--rd)";
+  let h=`<div class="bal-yours"><div style="font-size:10px;color:var(--tx3);margin-bottom:4px">${apt.lbl} — ${apt.name}</div>`;
+  h+=`<div style="font-size:11px;color:var(--tx3);margin-bottom:4px">${lang==="el"?"ΣΑΣ ΑΝΑΛΟΓΕΙ":"YOUR AMOUNT"}</div>`;
+  h+=`<div style="font-size:34px;font-weight:700;font-family:Georgia,serif;color:${myColor}">${myAmt.toFixed(2)} €</div>`;
+  h+=`<div style="font-size:10px;color:var(--tx3);margin-top:3px">${myAmt<=0.01?(lang==="el"?"✓ Εξοφλημένο":"✓ Paid"):(lang==="el"?"Υπόλοιπο":"Outstanding")}</div></div>`;
+  // Period selector
+  h+=ppH("openMyBalance");
+  // Ανάλυση
+  h+=`<div class="card" style="margin-bottom:10px">`;
+  h+=`<div class="ctit">${lang==="el"?"Ανάλυση Χρέωσης":"Charge Breakdown"} ${pLbl(period)}</div>`;
+  h+=`<div class="bal-section tenant"><div style="font-size:10px;color:var(--bl);font-weight:600;margin-bottom:5px">${lang==="el"?"ΕΞΟΔΑ ΚΑΤΟΙΚΟΥ":"TENANT CHARGES"}</div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>${lang==="el"?"Σύνολο":"Total"}</span><span>${fmt(c.tenant)}</span></div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:3px;color:${tb<=0.01?"var(--gn)":"var(--rd)"}"><span>${lang==="el"?"Υπόλοιπο":"Balance"}</span><span>${fmt(Math.max(0,tb))}</span></div></div>`;
+  h+=`<div class="bal-section owner"><div style="font-size:10px;color:var(--pu);font-weight:600;margin-bottom:5px">${lang==="el"?"ΕΞΟΔΑ ΙΔΙΟΚΤΗΤΗ":"OWNER CHARGES"}</div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>${lang==="el"?"Σύνολο":"Total"}</span><span>${fmt(c.owner)}</span></div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:3px;color:${ob<=0.01?"var(--gn)":"var(--rd)"}"><span>${lang==="el"?"Υπόλοιπο":"Balance"}</span><span>${fmt(Math.max(0,ob))}</span></div></div>`;
+  h+=`<div class="bal-section both"><div style="font-size:10px;color:var(--gd);font-weight:600;margin-bottom:5px">${lang==="el"?"ΓΕΝΙΚΟ ΣΥΝΟΛΟ":"GRAND TOTAL"}</div>`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span>${lang==="el"?"Σύνολο":"Total"}</span><span style="color:var(--gd)">${fmt(c.total)}</span></div></div></div>`;
+  // Ιστορικό πληρωμών
+  const myPays=D.pays.filter(p=>p.apt===aptId);
+  h+=`<div class="card"><div class="ctit">${lang==="el"?"Πληρωμές":"Payments"}</div>`;
+  if(myPays.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν":"None yet"}</div>`;
+  else myPays.slice().reverse().slice(0,8).forEach(p=>{
+    const ptChip=p.payerType==="owner"?`<span class="chip co">${lang==="el"?"Ιδ":"O"}</span>`:`<span class="chip ct2">${lang==="el"?"Κατ":"T"}</span>`;
+    h+=`<div class="pr"><div style="flex:1;font-size:10px;color:var(--tx3)">${pLbl(p.period)}${ptChip} · ${p.method==="cash"?"💵":"🏦"}</div><div style="font-size:12px;font-weight:600;color:var(--gn)">${fmt(p.amount)}</div><div style="font-size:10px;color:var(--tx3)">${fmtD(p.paidAt)}</div></div>`;
+  });
+  h+=`</div><div class="sb"></div>`;showSub(h);
+}
+
+// ═══════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════
+function openHistory(){
+  const aptId=user.aptId;
+  const ps=[...new Set([...D.ce,...D.ke].map(e=>e.period))].sort().reverse();
+  let h=`<div class="card"><div class="ctit">${lang==="el"?"Ιστορικό":"History"} — ${getApt(aptId).lbl}</div>`;
+  if(ps.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν":"No data"}</div>`;
+  ps.forEach(p=>{
+    const c=calcCharge(aptId,p);
+    const paid=D.pays.filter(x=>x.apt===aptId&&x.period===p).reduce((s,x)=>s+Number(x.amount),0);
+    const b=c.total-paid;
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--br)">
+      <div><div style="font-size:12px">${pLbl(p)}</div><div style="font-size:10px;color:var(--tx3)">${lang==="el"?"Χρέωση":"Charge"}: ${fmt(c.total)}</div></div>
+      <div style="text-align:right"><div style="font-size:11px;font-weight:600;color:${b<=0.01?"var(--gn)":"var(--rd)"}">${b<=0.01?(lang==="el"?"✓ Εξοφλ.":"✓ Paid"):(lang==="el"?"Υπόλ. ":"Bal. ")+fmt(Math.max(0,b))}</div></div></div>`;
+  });
+  h+=`</div><div class="sb"></div>`;showSub(h);
+}
+
+// ═══════════════════════════════════
+// ANNOUNCEMENTS
+// ═══════════════════════════════════
+function openAnns(){
+  const canPost=role!=="resident";
+  let h=canPost?`<div style="margin-bottom:10px"><button class="btn bp bsm" onclick="openAnnF()">+ ${lang==="el"?"Νέα":"New"}</button></div>`:"";
+  if(D.anns.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν":"None"}</div>`;
+  else D.anns.slice().reverse().forEach(a=>{h+=`<div class="an"><div class="at">${a.text}</div><div class="am">${a.author} · ${fmtDT(a.createdAt)}</div></div>`;});
+  h+=`<div class="sb"></div>`;showSub(h);
+}
+function openAnnF(){
+  openM(`<div class="mt">${lang==="el"?"Νέα Ανακοίνωση":"New Announcement"} <button class="mc" onclick="closeM()">×</button></div>
+    <div class="fg"><label class="fl">${lang==="el"?"Κείμενο":"Text"}</label><textarea id="annTxt" class="fi" rows="4" style="resize:vertical" placeholder="..."></textarea></div>
+    <button class="btn bp bblk" onclick="saveAnn()">✓ ${lang==="el"?"Δημοσίευση":"Publish"}</button>`);
+}
+async function saveAnn(){
+  const txt=document.getElementById("annTxt").value.trim();if(!txt){flash(lang==="el"?"Γράψε κείμενο":"Write text","er");return;}
+  const authors={admin:"👑 Admin",genikos:"⭐ Γεν. Διαχ.",diax:"🏗️ "+BUILDING.manager};
+  await fbP("data/announcements",{text:txt,author:authors[role]||"—",createdAt:new Date().toISOString()});
+  await loadAll();closeM();flash("✓");openAnns();
+}
+
+// ═══════════════════════════════════
+// EDIT FIXED EXPENSES
+// ═══════════════════════════════════
+function editFixed(){
+  let h=`<div class="mt">📌 Αλλαγή Κεντρικών Παγίων <button class="mc" onclick="closeM()">×</button></div>`;
+  h+=`<div style="font-size:11px;color:var(--tx3);margin-bottom:12px">Ισχύουν για όλους τους πυρήνες κάθε μήνα</div>`;
+  FIXED_EXPENSES.forEach((f,i)=>{
+    h+=`<div class="fg"><label class="fl">${f.icon} ${f.desc}</label><input id="fix_${i}" class="fi" type="number" step="0.01" value="${f.amt}" placeholder="0.00"></div>`;
+  });
+  h+=`<button class="btn bp bblk" onclick="saveFixed()">✓ Αποθήκευση</button>`;
+  openM(h);
+}
+async function saveFixed(){
+  const updated=FIXED_EXPENSES.map((f,i)=>{const el=document.getElementById("fix_"+i);return {...f,amt:parseFloat(el?.value||f.amt)};});
+  const obj={};updated.forEach(f=>{obj[f.id]={desc:f.desc,cat:f.cat,amt:f.amt,type:f.type,icon:f.icon};});
+  await fbS("data/fixedExpenses",obj);
+  FIXED_EXPENSES=updated;
+  await loadAll();closeM();flash("✓ Πάγια αποθηκεύτηκαν");openExpenses("ce");
+}
+
+function editCoreFixed(){
+  let h=`<div class="mt">📌 Πάγια Πυρήνα <button class="mc" onclick="closeM()">×</button></div>`;
+  h+=`<div style="font-size:11px;color:var(--tx3);margin-bottom:12px">Εμφανίζονται αυτόματα κάθε μήνα — διαγράφεις όταν δεν χρειάζονται</div>`;
+  h+=`<div class="fg"><label class="fl">Περιγραφή *</label><input id="cfDesc" class="fi" placeholder="π.χ. Συντήρηση Ασανσέρ Έκτακτη"></div>`;
+  h+=`<div class="fg2"><div class="fg"><label class="fl">Ποσό (€) *</label><input id="cfAmt" class="fi" type="number" step="0.01" placeholder="0.00"></div>`;
+  h+=`<div class="fg"><label class="fl">Χρεώνεται σε</label><select id="cfType" class="fi">`;
+  h+=`<option value="tenant">Κάτοικος (×χιλ.)</option><option value="asan">Ασανσέρ (×χιλ.ασαν)</option><option value="owner">Ιδιοκτήτης (×χιλ.)</option><option value="express">Ίσα ÷${BUILDING.totalApts}</option>`;
+  h+=`</select></div></div>`;
+  h+=`<button class="btn bp bblk" onclick="saveCoreFixed()">✓ Προσθήκη</button>`;
+  // Υπάρχοντα
+  if((D.coreFixed||[]).length>0){
+    h+=`<div style="margin-top:14px;border-top:1px solid var(--br);padding-top:10px"><div style="font-size:11px;font-weight:600;margin-bottom:7px">Ενεργά πάγια πυρήνα:</div>`;
+    D.coreFixed.forEach(f=>{
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--br);font-size:11px">`;
+      h+=`<div><div style="font-weight:500">${f.desc}</div><div style="font-size:10px;color:var(--tx3)">${f.chargeType==="asan"?"🛗 Ασανσέρ":f.chargeType==="owner"?"Ιδιοκτήτης":"Κάτοικος"}</div></div>`;
+      h+=`<div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600">${fmt(f.amt)}</span>`;
+      h+=`<button onclick="delCoreFixed('${f.id}')" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:15px">×</button></div></div>`;
+    });
+    h+=`</div>`;
+  }
+  openM(h);
+}
+async function saveCoreFixed(){
+  const desc=document.getElementById("cfDesc").value;const amt=document.getElementById("cfAmt").value;
+  if(!desc||!amt){flash(lang==="el"?"Συμπλήρωσε όλα":"Fill all","er");return;}
+  const f={desc,amt:parseFloat(amt),chargeType:document.getElementById("cfType").value,createdAt:new Date().toISOString()};
+  await fbP("data/coreFixed",f);await loadAll();closeM();flash("✓");openExpenses("ke");
+}
+async function delCoreFixed(id){
+  if(!confirm(lang==="el"?"Διαγραφή;":"Delete?"))return;
+  await fbD("data/coreFixed/"+id);await loadAll();flash(lang==="el"?"Διαγράφηκε":"Deleted");editCoreFixed();
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+buildGrid();
+</script>
+</body>
+</html>
