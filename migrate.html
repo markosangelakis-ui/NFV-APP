@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>NFV Migration — Firebase → Supabase</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#f1f5f9;padding:20px;min-height:100vh;}
+.card{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:16px;}
+h1{font-size:20px;color:#f59e0b;margin-bottom:4px;}
+.sub{font-size:12px;color:#64748b;margin-bottom:20px;}
+.btn{background:#f59e0b;color:#0f172a;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;width:100%;}
+.btn:disabled{background:#334155;color:#64748b;cursor:not-allowed;}
+.btn-danger{background:#ef4444;color:#fff;}
+.log{background:#0f172a;border-radius:8px;padding:14px;height:320px;overflow-y:auto;font-family:monospace;font-size:11px;margin-top:12px;}
+.log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+.ok{color:#22c55e;}.er{color:#ef4444;}.inf{color:#94a3b8;}.warn{color:#f59e0b;}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.stat-box{background:#0f172a;border-radius:8px;padding:12px;text-align:center;}
+.stat-num{font-size:22px;font-weight:700;color:#f59e0b;}
+.stat-lbl{font-size:10px;color:#64748b;margin-top:2px;}
+.progress{background:#0f172a;border-radius:20px;height:8px;margin-top:8px;overflow:hidden;}
+.progress-bar{height:100%;background:#f59e0b;border-radius:20px;transition:width 0.3s;}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🔄 NFV Migration Tool</h1>
+  <div class="sub">Firebase → Supabase μεταφορά δεδομένων</div>
+
+  <div class="stat" id="stats">
+    <div class="stat-box"><div class="stat-num" id="sCe">-</div><div class="stat-lbl">Κεντρικά Έξοδα</div></div>
+    <div class="stat-box"><div class="stat-num" id="sKe">-</div><div class="stat-lbl">Έξοδα Πυρήνα</div></div>
+    <div class="stat-box"><div class="stat-num" id="sPay">-</div><div class="stat-lbl">Πληρωμές</div></div>
+    <div class="stat-box"><div class="stat-num" id="sAnn">-</div><div class="stat-lbl">Ανακοινώσεις</div></div>
+  </div>
+
+  <div class="progress"><div class="progress-bar" id="prog" style="width:0%"></div></div>
+
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn" id="btnLoad" onclick="loadFirebase()">1. Φόρτωση από Firebase</button>
+    <button class="btn" id="btnMigrate" onclick="migrate()" disabled>2. Μεταφορά στο Supabase</button>
+  </div>
+
+  <div class="log" id="log"><div class="log-line inf">Έτοιμο. Πάτα "Φόρτωση από Firebase" για να ξεκινήσεις.</div></div>
+</div>
+
+<script>
+const FB_URL = "https://nea-filothei-village-default-rtdb.europe-west1.firebasedatabase.app";
+const SB_URL = "https://mcqpygjdzmdrntojegkhr.supabase.co";
+const SB_KEY = "sb_publishable_c3_gxOYkpVe3U5SW035xuA_RgvGBLNV";
+
+let fbData = null;
+let totalSteps = 0;
+let doneSteps = 0;
+
+function log(msg, type="inf") {
+  const d = document.getElementById("log");
+  const line = document.createElement("div");
+  line.className = "log-line " + type;
+  line.textContent = new Date().toLocaleTimeString("el-GR") + " — " + msg;
+  d.appendChild(line);
+  d.scrollTop = d.scrollHeight;
+}
+
+function setProgress(pct) {
+  document.getElementById("prog").style.width = pct + "%";
+}
+
+async function loadFirebase() {
+  document.getElementById("btnLoad").disabled = true;
+  log("Φόρτωση δεδομένων από Firebase...", "inf");
+  try {
+    const r = await fetch(FB_URL + "/data.json");
+    const data = await r.json();
+    fbData = data;
+
+    const ce = data.centralExpenses ? Object.keys(data.centralExpenses).length : 0;
+    const ke = data.coreExpenses ? Object.keys(data.coreExpenses).length : 0;
+    const pay = data.payments ? Object.keys(data.payments).length : 0;
+    const ann = data.announcements ? Object.keys(data.announcements).length : 0;
+
+    document.getElementById("sCe").textContent = ce;
+    document.getElementById("sKe").textContent = ke;
+    document.getElementById("sPay").textContent = pay;
+    document.getElementById("sAnn").textContent = ann;
+
+    log(`✓ Κεντρικά Έξοδα: ${ce}`, "ok");
+    log(`✓ Έξοδα Πυρήνα: ${ke}`, "ok");
+    log(`✓ Πληρωμές: ${pay}`, "ok");
+    log(`✓ Ανακοινώσεις: ${ann}`, "ok");
+    log("Firebase φορτώθηκε! Πάτα 'Μεταφορά στο Supabase'", "ok");
+
+    totalSteps = ce + ke + pay + ann;
+    document.getElementById("btnMigrate").disabled = false;
+  } catch(e) {
+    log("ERROR: " + e.message, "er");
+    document.getElementById("btnLoad").disabled = false;
+  }
+}
+
+async function sbInsert(table, rows) {
+  if (!rows || rows.length === 0) return { ok: true };
+  const r = await fetch(SB_URL + "/rest/v1/" + table, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SB_KEY,
+      "Authorization": "Bearer " + SB_KEY,
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify(rows)
+  });
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(err);
+  }
+  return { ok: true };
+}
+
+async function migrate() {
+  document.getElementById("btnMigrate").disabled = true;
+  log("Έναρξη μεταφοράς...", "warn");
+
+  try {
+    // 1. ΚΕΝΤΡΙΚΑ ΕΞΟΔΑ
+    if (fbData.centralExpenses) {
+      log("Μεταφορά Κεντρικών Εξόδων...", "inf");
+      const rows = Object.entries(fbData.centralExpenses).map(([k, v]) => ({
+        description: v.description || "",
+        category: v.category || "",
+        amount: parseFloat(v.amount) || 0,
+        period: v.period || "",
+        date: v.date || null,
+        created_at: v.createdAt || new Date().toISOString()
+      }));
+      await sbInsert("central_expenses", rows);
+      doneSteps += rows.length;
+      setProgress(Math.round(doneSteps/totalSteps*100));
+      log(`✓ ${rows.length} κεντρικά έξοδα μεταφέρθηκαν`, "ok");
+    }
+
+    // 2. ΕΞΟΔΑ ΠΥΡΗΝΑ
+    if (fbData.coreExpenses) {
+      log("Μεταφορά Εξόδων Πυρήνα...", "inf");
+      const entries = Object.entries(fbData.coreExpenses);
+      for (const [k, v] of entries) {
+        const row = {
+          description: v.description || "",
+          category: v.category || "",
+          amount: parseFloat(v.amount) || 0,
+          period: v.period || "",
+          date: v.date || null,
+          charge_type: v.chargeType || "tenant",
+          gas_total_metab: v.gas_total_metab ? parseFloat(v.gas_total_metab) : null,
+          gas_total_pagio: v.gas_total_pagio ? parseFloat(v.gas_total_pagio) : null,
+          gas_pagio_monad: v.gas_pagio_monad ? parseFloat(v.gas_pagio_monad) : null,
+          created_at: v.createdAt || new Date().toISOString()
+        };
+
+        // Insert core expense and get ID
+        const r = await fetch(SB_URL + "/rest/v1/core_expenses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SB_KEY,
+            "Authorization": "Bearer " + SB_KEY,
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify(row)
+        });
+        const inserted = await r.json();
+        const expId = inserted[0]?.id;
+
+        // Gas units per apartment
+        if (expId && v.category === "Φυσικό Αέριο") {
+          const gasRows = [];
+          const aptIds = ["A5","A6","A7","A8","B5","B6","B7","G4","G5","G6","D4","D5","AP"];
+          aptIds.forEach(aptId => {
+            const units = parseFloat(v["gas_metab_"+aptId]) || 0;
+            if (units > 0) gasRows.push({ expense_id: expId, apt_id: aptId, units });
+          });
+          if (gasRows.length > 0) await sbInsert("gas_units", gasRows);
+        }
+
+        doneSteps++;
+        setProgress(Math.round(doneSteps/totalSteps*100));
+      }
+      log(`✓ ${entries.length} έξοδα πυρήνα μεταφέρθηκαν`, "ok");
+    }
+
+    // 3. ΠΛΗΡΩΜΕΣ
+    if (fbData.payments) {
+      log("Μεταφορά Πληρωμών...", "inf");
+      const rows = Object.entries(fbData.payments).map(([k, v]) => ({
+        apt_id: v.apt || "",
+        period: v.period || "",
+        amount: parseFloat(v.amount) || 0,
+        payer_type: v.payerType || "tenant",
+        method: v.method || "cash",
+        note: v.note || "",
+        receipt_no: v.receiptNo || "",
+        paid_at: v.paidAt || new Date().toISOString()
+      }));
+      await sbInsert("payments", rows);
+      doneSteps += rows.length;
+      setProgress(Math.round(doneSteps/totalSteps*100));
+      log(`✓ ${rows.length} πληρωμές μεταφέρθηκαν`, "ok");
+    }
+
+    // 4. ΑΝΑΚΟΙΝΩΣΕΙΣ
+    if (fbData.announcements) {
+      log("Μεταφορά Ανακοινώσεων...", "inf");
+      const rows = Object.entries(fbData.announcements).map(([k, v]) => ({
+        body: v.text || "",
+        author: v.author || "",
+        created_at: v.createdAt || new Date().toISOString()
+      }));
+      await sbInsert("announcements", rows);
+      doneSteps += rows.length;
+      setProgress(100);
+      log(`✓ ${rows.length} ανακοινώσεις μεταφέρθηκαν`, "ok");
+    }
+
+    log("✅ ΜΕΤΑΦΟΡΑ ΟΛΟΚΛΗΡΩΘΗΚΕ ΕΠΙΤΥΧΩΣ!", "ok");
+
+  } catch(e) {
+    log("ERROR: " + e.message, "er");
+    document.getElementById("btnMigrate").disabled = false;
+  }
+}
+</script>
+</body>
+</html>
