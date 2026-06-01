@@ -231,7 +231,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--dk);color:var(--tx);}
 // ═══════════════════════════════════
 // CONFIGURATION
 // ═══════════════════════════════════
-const FB="https://nea-filothei-village-default-rtdb.europe-west1.firebasedatabase.app";
+const SB_URL="https://mcqpygjdzmdrntojegkhr.supabase.co";
+const SB_KEY="sb_publishable_c3_gxOYkpVe3U5SW035xuA_RgvGBLNV";
 const BUILDING={
   name:"Πάτμου 5Α",
   address:"Πάτμου 5Α, Φιλοθέη Μαρούσι",
@@ -300,27 +301,72 @@ let D={ce:[],ke:[],pays:[],anns:[],res:{}};
 let aiMsgs=[];
 
 // ═══════════════════════════════════
-// FIREBASE
+// SUPABASE REST API
 // ═══════════════════════════════════
-const fbUrl=p=>`${FB}/${p}.json`;
-async function fbG(p){try{const r=await fetch(fbUrl(p));return await r.json();}catch{return null;}}
-async function fbS(p,d){try{await fetch(fbUrl(p),{method:"PUT",body:JSON.stringify(d)});}catch{}}
-async function fbP(p,d){try{const r=await fetch(fbUrl(p),{method:"POST",body:JSON.stringify(d)});return (await r.json()).name;}catch{}}
-async function fbD(p){try{await fetch(fbUrl(p),{method:"DELETE"});}catch{}}
+const sbH=()=>({
+  "Content-Type":"application/json",
+  "apikey":SB_KEY,
+  "Authorization":"Bearer "+SB_KEY,
+  "Prefer":"return=representation"
+});
+async function sbGet(table,params=""){
+  try{const r=await fetch(`${SB_URL}/rest/v1/${table}?${params}`,{headers:sbH()});return await r.json();}catch{return [];}
+}
+async function sbInsert(table,obj){
+  try{const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:"POST",headers:sbH(),body:JSON.stringify(obj)});const j=await r.json();return Array.isArray(j)?j[0]:j;}catch{return null;}
+}
+async function sbUpdate(table,id,obj){
+  try{await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`,{method:"PATCH",headers:sbH(),body:JSON.stringify(obj)});}catch{}
+}
+async function sbDelete(table,id){
+  try{await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`,{method:"DELETE",headers:sbH()});}catch{}
+}
+async function sbUpsert(table,obj,onConflict){
+  const h={...sbH(),"Prefer":"resolution=merge-duplicates,return=representation"};
+  try{const r=await fetch(`${SB_URL}/rest/v1/${table}${onConflict?"?on_conflict="+onConflict:""}`,{method:"POST",headers:h,body:JSON.stringify(obj)});return await r.json();}catch{return null;}
+}
+
+// Map Supabase rows back to the internal format the app uses
+function mapCE(r){return {id:r.id,description:r.description,category:r.category,amount:r.amount,period:r.period,date:r.date,createdAt:r.created_at,amtTenant:r.amt_tenant,amtOwner:r.amt_owner};}
+function mapKE(r){
+  const obj={id:r.id,description:r.description,category:r.category,amount:r.amount,period:r.period,date:r.date,createdAt:r.created_at,amtTenant:r.amt_tenant,amtOwner:r.amt_owner,
+    gas_total_metab:r.gas_total_metab,gas_total_pagio:r.gas_total_pagio,gas_pagio_monad:r.gas_pagio_monad};
+  // Attach gas units from the joined gas_units rows (populated in loadAll)
+  if(r._gasUnits){r._gasUnits.forEach(g=>{obj["gas_metab_"+g.apt_id]=g.units;});}
+  return obj;
+}
+function mapPay(r){return {id:r.id,apt:r.apt_id,period:r.period,amount:r.amount,payerType:r.payer_type,method:r.method,note:r.note,paidAt:r.paid_at,receiptNo:r.receipt_no};}
+function mapAnn(r){return {id:r.id,text:r.body,author:r.author,createdAt:r.created_at};}
+function mapRes(r){return {type:r.res_type,ownerName:r.owner_name,ownerEmail:r.owner_email,tenantName:r.tenant_name,tenantEmail:r.tenant_email};}
+function mapFixed(r){return {id:r.id,desc:r.description,cat:r.category,amt:r.amount,type:r.charge_type,icon:r.icon||"📌"};}
+function mapCoreFixed(r){return {id:r.id,desc:r.description,amt:r.amount,chargeType:r.charge_type,createdAt:r.created_at};}
 
 async function loadAll(){
-  const d=await fbG("data");
-  if(d){
-    D.ce=d.centralExpenses?Object.entries(d.centralExpenses).map(([k,v])=>({id:k,...v})):[];
-    D.ke=d.coreExpenses?Object.entries(d.coreExpenses).map(([k,v])=>({id:k,...v})):[];
-    D.pays=d.payments?Object.entries(d.payments).map(([k,v])=>({id:k,...v})):[];
-    D.anns=d.announcements?Object.entries(d.announcements).map(([k,v])=>({id:k,...v})):[];
-    D.res=d.residents||{};
-    D.coreFixed=d.coreFixed?Object.entries(d.coreFixed).map(([k,v])=>({id:k,...v})):[];
-    if(d.fixedExpenses){
-      FIXED_EXPENSES=Object.entries(d.fixedExpenses).map(([k,v])=>({...v,id:k}));
-    }
-  }
+  try{
+    const [ceRows,keRows,gasRows,payRows,annRows,resRows,fixedRows,cfRows]=await Promise.all([
+      sbGet("central_expenses","select=*&order=created_at.desc"),
+      sbGet("core_expenses","select=*&order=created_at.desc"),
+      sbGet("gas_units","select=*"),
+      sbGet("payments","select=*&order=paid_at.desc"),
+      sbGet("announcements","select=*&order=created_at.desc"),
+      sbGet("residents","select=*"),
+      sbGet("fixed_expenses","select=*&order=sort_order.asc"),
+      sbGet("core_fixed","select=*&order=created_at.asc"),
+    ]);
+    // Attach gas units to core expenses
+    const gasMap={};
+    (gasRows||[]).forEach(g=>{if(!gasMap[g.expense_id])gasMap[g.expense_id]=[];gasMap[g.expense_id].push(g);});
+    (keRows||[]).forEach(r=>{r._gasUnits=gasMap[r.id]||[];});
+
+    D.ce=(ceRows||[]).map(mapCE);
+    D.ke=(keRows||[]).map(mapKE);
+    D.pays=(payRows||[]).map(mapPay);
+    D.anns=(annRows||[]).map(mapAnn);
+    // Build residents dict keyed by apt_id
+    D.res={};(resRows||[]).forEach(r=>{D.res[r.apt_id]=mapRes(r);});
+    if(fixedRows&&fixedRows.length>0)FIXED_EXPENSES=fixedRows.map(mapFixed);
+    D.coreFixed=(cfRows||[]).map(mapCoreFixed);
+  }catch(e){console.error("loadAll error:",e);}
   refreshCurrent();
 }
 
@@ -782,7 +828,6 @@ async function saveExp(dbType,editId){
   const type=CAT_TYPE[cat]||"tenant";
   const desc=document.getElementById("eDesc").value;
   if(!desc){flash(lang==="el"?"Συμπλήρωσε περιγραφή":"Fill description","er");return;}
-  const path="data/"+(dbType==="ce"?"centralExpenses":"coreExpenses");
   let e={description:desc,category:cat,period,createdAt:new Date().toISOString()};
 
   if(type==="mixed"){
@@ -817,12 +862,36 @@ async function saveExp(dbType,editId){
     }
   }
 
-  if(editId)await fbS(path+"/"+editId,{...e,id:editId});else await fbP(path,e);
+  // Map to Supabase column names
+  const table=dbType==="ce"?"central_expenses":"core_expenses";
+  const row={description:e.description,category:e.category,amount:e.amount,period:e.period,date:e.date||null,
+    created_at:e.createdAt,amt_tenant:e.amtTenant||null,amt_owner:e.amtOwner||null};
+  if(dbType==="ke"){
+    row.gas_total_metab=e.gas_total_metab||null;
+    row.gas_total_pagio=e.gas_total_pagio||null;
+    row.gas_pagio_monad=e.gas_pagio_monad||null;
+  }
+  let expId=editId;
+  if(editId){
+    await sbUpdate(table,editId,row);
+  } else {
+    const ins=await sbInsert(table,row);
+    expId=ins?.id;
+  }
+  // Gas units: delete old, re-insert new
+  if(dbType==="ke"&&expId&&e.category==="Φυσικό Αέριο"){
+    await fetch(`${SB_URL}/rest/v1/gas_units?expense_id=eq.${expId}`,{method:"DELETE",headers:sbH()});
+    const gasRows=[];
+    APTS.forEach(a=>{const v=e["gas_metab_"+a.id];if(v>0)gasRows.push({expense_id:expId,apt_id:a.id,units:v});});
+    if(gasRows.length>0)await sbInsert("gas_units",gasRows);
+  }
   await loadAll();closeM();flash("✓");openExpenses(dbType);
 }
 async function delExp(dbType,id){
   if(!confirm(lang==="el"?"Διαγραφή;":"Delete?"))return;
-  await fbD("data/"+(dbType==="ce"?"centralExpenses":"coreExpenses")+"/"+id);
+  const table=dbType==="ce"?"central_expenses":"core_expenses";
+  if(dbType==="ke")await fetch(`${SB_URL}/rest/v1/gas_units?expense_id=eq.${id}`,{method:"DELETE",headers:sbH()});
+  await sbDelete(table,id);
   await loadAll();flash(lang==="el"?"Διαγράφηκε":"Deleted");openExpenses(dbType);
 }
 
@@ -1066,7 +1135,9 @@ async function savePay(){
   if(!aptId||!amt){flash(lang==="el"?"Συμπλήρωσε όλα":"Fill all","er");return;}
   const rn="RCP-"+Date.now().toString().slice(-6);
   const p={apt:aptId,period:document.getElementById("pPer").value,amount:parseFloat(amt),payerType:pt,method:document.getElementById("pMeth").value,note:document.getElementById("pNote").value||"",paidAt:new Date().toISOString(),receiptNo:rn};
-  await fbP("data/payments",p);await loadAll();closeM();flash("✓");setTimeout(()=>printRec(p),500);openPayments();
+  const row={apt_id:p.apt,period:p.period,amount:p.amount,payer_type:p.payerType,method:p.method,note:p.note,receipt_no:p.receiptNo,paid_at:p.paidAt};
+  await sbInsert("payments",row);
+  await loadAll();closeM();flash("✓");setTimeout(()=>printRec(p),500);openPayments();
 }
 function printRec(p){
   if(typeof p==="string")try{p=JSON.parse(p);}catch{return;}
@@ -1136,15 +1207,17 @@ function updResFields(type){
 async function saveRes(aptId){
   const id=aptId||document.getElementById("rAptId")?.value;
   if(!id){flash(lang==="el"?"Επίλεξε δ/μα":"Select apt","er");return;}
-  const r={
-    type:document.getElementById("rType").value,
-    ownerName:document.getElementById("rOwnerName")?.value||"",
-    ownerEmail:document.getElementById("rOwnerEmail")?.value||"",
-    tenantName:document.getElementById("rTenantName")?.value||"",
-    tenantEmail:document.getElementById("rTenantEmail")?.value||"",
-    updatedAt:new Date().toISOString()
+  const row={
+    apt_id:id,
+    res_type:document.getElementById("rType").value,
+    owner_name:document.getElementById("rOwnerName")?.value||"",
+    owner_email:document.getElementById("rOwnerEmail")?.value||"",
+    tenant_name:document.getElementById("rTenantName")?.value||"",
+    tenant_email:document.getElementById("rTenantEmail")?.value||"",
+    updated_at:new Date().toISOString()
   };
-  await fbS("data/residents/"+id,r);await loadAll();closeM();flash("✓");openResidents();
+  await sbUpsert("residents",row,"apt_id");
+  await loadAll();closeM();flash("✓");openResidents();
 }
 
 // ═══════════════════════════════════
@@ -1223,7 +1296,7 @@ function openAnnF(){
 async function saveAnn(){
   const txt=document.getElementById("annTxt").value.trim();if(!txt){flash(lang==="el"?"Γράψε κείμενο":"Write text","er");return;}
   const authors={admin:"👑 Admin",genikos:"⭐ Γεν. Διαχ.",diax:"🏗️ "+BUILDING.manager};
-  await fbP("data/announcements",{text:txt,author:authors[role]||"—",createdAt:new Date().toISOString()});
+  await sbInsert("announcements",{body:txt,author:authors[role]||"—",created_at:new Date().toISOString()});
   await loadAll();closeM();flash("✓");openAnns();
 }
 
@@ -1241,8 +1314,8 @@ function editFixed(){
 }
 async function saveFixed(){
   const updated=FIXED_EXPENSES.map((f,i)=>{const el=document.getElementById("fix_"+i);return {...f,amt:parseFloat(el?.value||f.amt)};});
-  const obj={};updated.forEach(f=>{obj[f.id]={desc:f.desc,cat:f.cat,amt:f.amt,type:f.type,icon:f.icon};});
-  await fbS("data/fixedExpenses",obj);
+  // Update each fixed expense by id in Supabase
+  await Promise.all(updated.map(f=>sbUpdate("fixed_expenses",f.id,{amount:f.amt})));
   FIXED_EXPENSES=updated;
   await loadAll();closeM();flash("✓ Πάγια αποθηκεύτηκαν");openExpenses("ce");
 }
@@ -1272,12 +1345,12 @@ function editCoreFixed(){
 async function saveCoreFixed(){
   const desc=document.getElementById("cfDesc").value;const amt=document.getElementById("cfAmt").value;
   if(!desc||!amt){flash(lang==="el"?"Συμπλήρωσε όλα":"Fill all","er");return;}
-  const f={desc,amt:parseFloat(amt),chargeType:document.getElementById("cfType").value,createdAt:new Date().toISOString()};
-  await fbP("data/coreFixed",f);await loadAll();closeM();flash("✓");openExpenses("ke");
+  const row={description:desc,amount:parseFloat(amt),charge_type:document.getElementById("cfType").value,created_at:new Date().toISOString()};
+  await sbInsert("core_fixed",row);await loadAll();closeM();flash("✓");openExpenses("ke");
 }
 async function delCoreFixed(id){
   if(!confirm(lang==="el"?"Διαγραφή;":"Delete?"))return;
-  await fbD("data/coreFixed/"+id);await loadAll();flash(lang==="el"?"Διαγράφηκε":"Deleted");editCoreFixed();
+  await sbDelete("core_fixed",id);await loadAll();flash(lang==="el"?"Διαγράφηκε":"Deleted");editCoreFixed();
 }
 
 // ═══════════════════════════════════
