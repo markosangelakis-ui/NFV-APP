@@ -309,8 +309,22 @@ function openM(h){document.getElementById("MOC").innerHTML=h;document.getElement
 function closeM(){document.getElementById("MOV").classList.remove("op");}
 document.getElementById("MOV").addEventListener("click",e=>{if(e.target.id==="MOV")closeM();});
 
-// ── FIX: ppH had a stray extra } after it which caused SyntaxError ──
-function ppH(fn){return `<input type="month" class="pp" value="${period}" onchange="period=this.value;loadAll()" style="margin-bottom:10px">`;}
+// ── FIX: ppH replaced with month+year dropdowns (no weird year input) ──
+function ppH(fn){
+  const[py,pm]=period.split("-");
+  const curY=new Date().getFullYear();
+  const years=[curY-2,curY-1,curY,curY+1];
+  const months=["Ιαν","Φεβ","Μαρ","Απρ","Μαϊ","Ιουν","Ιουλ","Αυγ","Σεπ","Οκτ","Νοε","Δεκ"];
+  let h=`<div style="display:flex;gap:5px;margin-bottom:10px;align-items:center">`;
+  h+=`<select class="pp" onchange="setPeriodMonth(this.value);${fn||''}" style="flex:1">`;
+  months.forEach((m,i)=>{const v=String(i+1).padStart(2,"0");h+=`<option value="${v}"${pm===v?" selected":""}>${m}</option>`;});
+  h+=`</select>`;
+  h+=`<select class="pp" onchange="setPeriodYear(this.value);${fn||''}" style="flex:1">`;
+  years.forEach(y=>{h+=`<option value="${y}"${parseInt(py)===y?" selected":""}>${y}</option>`;});
+  h+=`</select>`;
+  h+=`</div>`;
+  return h;
+}
 
 function calcCharge(aptId,p){
   const apt=getApt(aptId);
