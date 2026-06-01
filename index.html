@@ -384,7 +384,19 @@ function flash(msg,tp="ok"){const e=document.getElementById("fl");e.textContent=
 function openM(h){document.getElementById("MOC").innerHTML=h;document.getElementById("MOV").classList.add("op");}
 function closeM(){document.getElementById("MOV").classList.remove("op");}
 document.getElementById("MOV").addEventListener("click",e=>{if(e.target.id==="MOV")closeM();});
-function ppH(fn){return `<input type="month" class="pp" value="${period}" onchange="period=this.value;loadAll()" style="margin-bottom:10px">`;}
+function setPeriodMonth(v){const[y]=period.split("-");period=y+"-"+v;loadAll();}
+function setPeriodYear(v){const[,m]=period.split("-");period=v+"-"+m;loadAll();}
+function ppH(fn){
+  const [y,m]=period.split("-").map(Number);
+  const months=["Ιανουάριος","Φεβρουάριος","Μάρτιος","Απρίλιος","Μάιος","Ιούνιος","Ιούλιος","Αύγουστος","Σεπτέμβριος","Οκτώβριος","Νοέμβριος","Δεκέμβριος"];
+  let mOpts="",yOpts="";
+  months.forEach((n,i)=>{const v=String(i+1).padStart(2,"0");mOpts+=`<option value="${v}"${i+1===m?" selected":""}>${n}</option>`;});
+  for(let yr=2024;yr<=2027;yr++){yOpts+=`<option value="${yr}"${yr===y?" selected":""}>${yr}</option>`;}
+  return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+    <select onchange="setPeriodMonth(this.value)" style="background:var(--dk3);border:1px solid var(--br);color:var(--tx);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:13px">${mOpts}</select>
+    <select onchange="setPeriodYear(this.value)" style="background:var(--dk3);border:1px solid var(--br);color:var(--tx);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:13px">${yOpts}</select>
+  </div>`;
+}}
 
 // ═══════════════════════════════════
 // CALCULATIONS
