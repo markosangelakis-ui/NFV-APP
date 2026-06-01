@@ -504,7 +504,13 @@ function showSub(html){
   ["pAsk","pAlerts","pMenu"].forEach(p=>{const el=document.getElementById(p);if(el)el.classList.remove("active");});
   document.getElementById("pSub").classList.add("active");
 }
-function refreshCurrent(){if(tab==="ask")renderAIMsgs();else if(tab==="alerts")buildAlerts();}
+function refreshCurrent(){
+  if(tab==="ask")renderAIMsgs();
+  else if(tab==="alerts")buildAlerts();
+  // Αν είναι ανοιχτή η sub view εξόδων, ξανάνοιξέ την
+  const sub=document.getElementById("subContent");
+  if(sub&&sub.dataset.view)eval(sub.dataset.view);
+}
 
 // ═══════════════════════════════════
 // LANGUAGE
@@ -740,6 +746,7 @@ function openExpenses(dbType){
       <button onclick="delExp('${dbType}','${e.id}')" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px">×</button></div></div>`;
   });
   h+=`</div><div class="sb"></div>`;showSub(h);
+  document.getElementById("subContent").dataset.view=`openExpenses('${dbType}')`;
 }
 
 function openExpF(dbType, editId){
