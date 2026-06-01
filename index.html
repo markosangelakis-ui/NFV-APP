@@ -510,9 +510,15 @@ function showSub(html){
 function refreshCurrent(){
   if(tab==="ask")renderAIMsgs();
   else if(tab==="alerts")buildAlerts();
-  // Αν είναι ανοιχτή η sub view εξόδων, ξανάνοιξέ την
   const sub=document.getElementById("subContent");
-  if(sub&&sub.dataset.view)eval(sub.dataset.view);
+  if(sub&&sub.dataset.view){
+    const v=sub.dataset.view;
+    if(v.startsWith("openExpenses"))openExpenses(v.includes("'ce'")?"ce":"ke");
+    else if(v.startsWith("openStatus"))openStatus();
+    else if(v.startsWith("openPayments"))openPayments();
+    else if(v.startsWith("openResidents"))openResidents();
+    else if(v.startsWith("openAnns"))openAnns();
+  }
 }
 
 // ═══════════════════════════════════
