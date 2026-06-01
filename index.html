@@ -384,7 +384,7 @@ function flash(msg,tp="ok"){const e=document.getElementById("fl");e.textContent=
 function openM(h){document.getElementById("MOC").innerHTML=h;document.getElementById("MOV").classList.add("op");}
 function closeM(){document.getElementById("MOV").classList.remove("op");}
 document.getElementById("MOV").addEventListener("click",e=>{if(e.target.id==="MOV")closeM();});
-function ppH(fn){return `<input type="month" class="pp" value="${period}" onchange="period=this.value;${fn}()" style="margin-bottom:10px">`;}
+function ppH(fn){return `<input type="month" class="pp" value="${period}" onchange="period=this.value;loadAll()" style="margin-bottom:10px">`;}
 
 // ═══════════════════════════════════
 // CALCULATIONS
