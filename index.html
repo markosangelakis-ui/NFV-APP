@@ -473,7 +473,7 @@ function buildMenuSecs(){
   const secs=[];
   if(isGenikos)secs.push({title:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",items:[{icon:"💰",label:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",sub:fmt([...D.ce].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0)),color:"var(--bl)",fn:()=>openExpenses("ce")}]});
   if(isDiax)secs.push({title:lang==="el"?"Πυρήνας":"Core",items:[
-    {icon:"🏗️",label:lang==="el"?"Έξοδα Πυρήνα":"Core Expenses",sub:fmt([...D.ke].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0)),color:"var(--or)",fn:()=>openExpenses("ke")},
+    {icon:"🏗️",label:lang==="el"?"Έξοδα Πυρήνα":"Core Expenses",sub:(()=>{const ke=[...D.ke].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0);const ce=[...D.ce].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0);const fx=FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0);const cf=(D.coreFixed||[]).reduce((s,f)=>s+Number(f.amt),0);return fmt(ke+ce+fx+cf);})(),color:"var(--or)",fn:()=>openExpenses("ke")},
     {icon:"📊",label:lang==="el"?"Κατάσταση Δ/τα":"Status",sub:APTS.filter(a=>getTotalBal(a.id)>0.01).length+" "+(lang==="el"?"εκκρεμή":"pending"),color:"var(--rd)",fn:()=>openStatus()},
     {icon:"💳",label:lang==="el"?"Πληρωμές":"Payments",sub:lang==="el"?"Καταχώρηση & ιστορικό":"Record & history",color:"var(--gn)",fn:()=>openPayments()},
     {icon:"🖨️",label:lang==="el"?"Ειδοποιητήρια":"Notices",sub:lang==="el"?"Εκτύπωση ανά δ/μα":"Print per apt",color:"var(--pu)",fn:()=>openNotices()},
@@ -526,7 +526,7 @@ function openExpenses(dbType){
   const total=exps.reduce((s,e)=>s+Number(e.amount),0);
   const fixedTotal=isCe?FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0):0;
   let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">`;
-  h+=ppH(`()=>openExpenses('${dbType}')`).replace('style="margin-bottom:10px"','style="margin-bottom:0"');
+  h+=ppH().replace('style="margin-bottom:10px"','style="margin-bottom:0"');
   h+=`<button class="btn bp bsm" onclick="openExpF('${dbType}')">+ ${isCe?"Κεντρικό":"Έξοδο Πυρήνα"}</button></div>`;
   if(isCe&&fixedTotal>0){
     h+=`<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:11px">`;
@@ -534,21 +534,47 @@ function openExpenses(dbType){
     FIXED_EXPENSES.forEach(f=>{h+=`<div style="display:flex;justify-content:space-between;color:var(--tx2);margin-bottom:2px"><span>${f.icon} ${f.desc}</span><span style="font-weight:600">${fmt(f.amt)}</span></div>`;});
     h+=`<div style="font-size:10px;color:var(--tx3);margin-top:5px">Μοιράζονται αυτόματα × χιλιοστά σε κάθε δ/μα</div></div>`;
   }
-  h+=`<div class="card" style="margin-bottom:10px;background:var(--dk3)"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--tx3)">${isCe?"⭐ Κεντρικά":"🏗️ Πυρήνας"} ${pLbl(period)}</span><span style="color:var(--gd);font-weight:600">${fmt(total)}</span></div></div>`;
+  // Για τον Διαχειριστή Κτηρίου (ke): δείξε ΠΡΩΤΑ τα κεντρικά (read-only) μετά τα πυρήνα
+  if(!isCe){
+    const ceExps=D.ce.filter(e=>e.period===period);
+    const ceTotal=ceExps.reduce((s,e)=>s+Number(e.amount),0);
+    const fixedTotalAll=FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0);
+    const grandTotal=ceTotal+fixedTotalAll+total+(D.coreFixed||[]).reduce((s,f)=>s+Number(f.amt),0);
+    // Κεντρικά (read-only)
+    h+=`<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:var(--rs);padding:10px;margin-bottom:10px">`;
+    h+=`<div style="font-size:10px;font-weight:600;color:var(--bl);margin-bottom:7px">⭐ ΚΕΝΤΡΙΚΑ ΕΞΟΔΑ ${pLbl(period)} <span style="font-weight:400;color:var(--tx3)">(από Γεν. Διαχειριστή)</span></div>`;
+    // Πάγια κεντρικά
+    FIXED_EXPENSES.forEach(f=>{h+=`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:2px"><span>📌 ${f.desc}</span><span style="font-weight:600">${fmt(f.amt)}</span></div>`;});
+    if(ceExps.length>0){
+      ceExps.forEach(e=>{h+=`<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:2px"><span>${ICONS[e.category]||"📋"} ${e.description}</span><span style="font-weight:600">${fmt(e.amount)}</span></div>`;});
+    } else {
+      h+=`<div style="font-size:10px;color:var(--tx3);font-style:italic">Δεν υπάρχουν κεντρικά έξοδα για τον μήνα</div>`;
+    }
+    h+=`<div style="border-top:1px solid rgba(59,130,246,0.2);margin-top:6px;padding-top:5px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--bl)"><span>Σύνολο Κεντρικών</span><span>${fmt(ceTotal+fixedTotalAll)}</span></div>`;
+    h+=`</div>`;
+    // Σύνολο Γενικό
+    h+=`<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:var(--rs);padding:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">`;
+    h+=`<span style="font-size:12px;font-weight:700;color:var(--gd)">💰 ΓΕΝΙΚΟ ΣΥΝΟΛΟ ${pLbl(period)}</span>`;
+    h+=`<span style="font-size:16px;font-weight:700;color:var(--gd)">${fmt(grandTotal)}</span>`;
+    h+=`</div>`;
+  } else {
+    h+=`<div class="card" style="margin-bottom:10px;background:var(--dk3)"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--tx3)">⭐ Κεντρικά ${pLbl(period)}</span><span style="color:var(--gd);font-weight:600">${fmt(total)}</span></div></div>`;
+  }
   if(!isCe){
     h+=`<div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:11px">`;
     h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="color:var(--or);font-weight:600">📌 Πάγια Πυρήνα (ενεργά)</div><button onclick="editCoreFixed()" style="background:var(--dk3);border:1px solid var(--br);color:var(--tx3);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-family:'DM Sans',sans-serif">+ Νέο Πάγιο</button></div>`;
     if(activeCF.length===0){h+=`<div style="color:var(--tx3);font-size:10px">Δεν υπάρχουν ενεργά πάγια πυρήνα</div>`;}
     else{activeCF.forEach(f=>{h+=`<div style="display:flex;justify-content:space-between;color:var(--tx2);margin-bottom:3px"><span>${f.desc}</span><span style="font-weight:600">${fmt(f.amt)}</span></div>`;});}
-    h+=`<div style="font-size:10px;color:var(--tx3);margin-top:5px">Εμφανίζονται αυτόματα στο διάστημα που ορίστηκε</div></div>`;
+    h+=`</div>`;
   }
-  h+=`<div class="card">`;
-  if(exps.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν έξοδα":"No expenses"}</div>`;
+  h+=`<div class="card"><div style="font-size:10px;font-weight:600;color:var(--or);margin-bottom:8px">🏗️ ΕΞΟΔΑ ΠΥΡΗΝΑ ${pLbl(period)}</div>`;
+  if(exps.length===0)h+=`<div class="emp">${lang==="el"?"Δεν υπάρχουν έξοδα πυρήνα":"No core expenses"}</div>`;
   else exps.forEach(e=>{
     const type=CAT_TYPE[e.category]||"tenant";
     const chip=type==="owner"?`<span class="chip co">${lang==="el"?"Ιδ/τής":"Owner"}</span>`:type==="gas"?`<span class="chip" style="background:rgba(249,115,22,0.15);color:var(--or)">Gas</span>`:type==="asan"?`<span class="chip co">🛗</span>`:`<span class="chip ct2">${lang==="el"?"Κάτ.":"Tenant"}</span>`;
     h+=`<div class="er"><div class="ei">${ICONS[e.category]||"📋"}</div><div style="flex:1"><div class="en">${e.description}${chip}</div><div class="em">${e.category}</div></div><div style="display:flex;align-items:center;gap:4px"><div class="ea">${fmt(e.amount)}</div><button onclick="openExpF('${dbType}','${e.id}')" style="background:none;border:1px solid var(--br);color:var(--tx3);cursor:pointer;padding:2px 5px;border-radius:4px;font-size:10px">✏️</button><button onclick="delExp('${dbType}','${e.id}')" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px">×</button></div></div>`;
   });
+  if(!isCe&&exps.length>0){h+=`<div style="border-top:1px solid var(--br);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--or)"><span>Σύνολο Πυρήνα</span><span>${fmt(total)}</span></div>`;}
   h+=`</div><div class="sb"></div>`;showSub(h);
   document.getElementById("subContent").dataset.view=`openExpenses('${dbType}')`;
 }
