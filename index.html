@@ -471,7 +471,7 @@ function buildMenuSecs(){
   const isDiax=role==="diax"||role==="admin";
   const isRes=role==="resident";
   const secs=[];
-  if(isGenikos)secs.push({title:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",items:[{icon:"💰",label:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",sub:fmt([...D.ce].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0)),color:"var(--bl)",fn:()=>openExpenses("ce")}]});
+  if(isGenikos)secs.push({title:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",items:[{icon:"💰",label:lang==="el"?"Κεντρικά Έξοδα":"Central Expenses",sub:(()=>{const ce=[...D.ce].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0);const fx=FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0);return fmt(ce+fx);})(),color:"var(--bl)",fn:()=>openExpenses("ce")}]});
   if(isDiax)secs.push({title:lang==="el"?"Πυρήνας":"Core",items:[
     {icon:"🏗️",label:lang==="el"?"Έξοδα Πυρήνα":"Core Expenses",sub:(()=>{const ke=[...D.ke].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0);const ce=[...D.ce].filter(e=>e.period===period).reduce((s,e)=>s+Number(e.amount),0);const fx=FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0);const cf=(D.coreFixed||[]).reduce((s,f)=>s+Number(f.amt),0);return fmt(ke+ce+fx+cf);})(),color:"var(--or)",fn:()=>openExpenses("ke")},
     {icon:"📊",label:lang==="el"?"Κατάσταση Δ/τα":"Status",sub:APTS.filter(a=>getTotalBal(a.id)>0.01).length+" "+(lang==="el"?"εκκρεμή":"pending"),color:"var(--rd)",fn:()=>openStatus()},
@@ -558,7 +558,12 @@ function openExpenses(dbType){
     h+=`<span style="font-size:16px;font-weight:700;color:var(--gd)">${fmt(grandTotal)}</span>`;
     h+=`</div>`;
   } else {
-    h+=`<div class="card" style="margin-bottom:10px;background:var(--dk3)"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--tx3)">⭐ Κεντρικά ${pLbl(period)}</span><span style="color:var(--gd);font-weight:600">${fmt(total)}</span></div></div>`;
+    const fixedTotal2=FIXED_EXPENSES.reduce((s,f)=>s+f.amt,0);
+    h+=`<div class="card" style="margin-bottom:10px;background:var(--dk3)">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--tx3)">⭐ Κεντρικά ${pLbl(period)}</span><span style="color:var(--gd);font-weight:600">${fmt(total)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--tx3)">📌 Πάγια</span><span style="color:var(--gd);font-weight:600">${fmt(fixedTotal2)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;border-top:1px solid var(--br);padding-top:5px;margin-top:3px"><span style="color:var(--tx2);font-weight:600">💰 Σύνολο</span><span style="color:var(--gd);font-weight:700">${fmt(total+fixedTotal2)}</span></div>
+    </div>`;
   }
   if(!isCe){
     h+=`<div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:11px">`;
