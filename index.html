@@ -218,20 +218,21 @@ const SB_URL="https://rnqpygjdzmdntojegkhr.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucXB5Z2pkem1kbnRvamVna2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMzU5OTgsImV4cCI6MjA5NTgxMTk5OH0.DoMojxwGLXyjOdd1XPRWiq9NBvqRDcSfvV_8fKfXJSM";
 const BUILDING={name:"Πάτμου 5Α",address:"Πάτμου 5Α, Φιλοθέη Μαρούσι",manager:"ΑΓΓΕΛΑΚΗΣ",totalApts:13};
 const APTS=[
-  {id:"A5",lbl:"Α5",name:"Κουτσουμπού Νότα",ck:74,ca:73,ct:73.0},
-  {id:"A6",lbl:"Α6",name:"Τάλαρος Αντώνης",ck:41,ca:40,ct:38.9},
-  {id:"A7",lbl:"Α7",name:"Τσιτράκη Κατερίνα",ck:65,ca:64,ct:57.3},
-  {id:"A8",lbl:"Α8",name:"Σαλμονά Σάρα",ck:68,ca:67,ct:70.1},
-  {id:"B5",lbl:"Β5",name:"Αγγελάκης Μάρκος",ck:86,ca:86,ct:90.3},
-  {id:"B6",lbl:"Β6",name:"Βαφείδου Ρίτα",ck:86,ca:86,ct:90.3},
-  {id:"B7",lbl:"Β7",name:"Καρύδης Αλέξανδρος",ck:95,ca:94,ct:95.5},
-  {id:"G4",lbl:"Γ4",name:"Αντωνιάδου",ck:94,ca:94,ct:95.5},
-  {id:"G5",lbl:"Γ5",name:"Σκανδάλη Σοφία",ck:95,ca:95,ct:90.3},
-  {id:"G6",lbl:"Γ6",name:"Κωνσταντίνου Ειρήνη",ck:69,ca:68,ct:67.2},
-  {id:"D4",lbl:"Δ4",name:"Καμπέρης Βαγγέλης",ck:117,ca:116,ct:117.1},
-  {id:"D5",lbl:"Δ5",name:"Αζάς Λευτέρης",ck:130,ca:129,ct:137.3},
-  {id:"AP",lbl:"ΑΠ",name:"Damco",ck:5,ca:15,ct:0},
+  {id:"A5",lbl:"Α5",name:"Κουτσουμπού Νότα",ck:74,ca:73,ct:73.0,gp:22},
+  {id:"A6",lbl:"Α6",name:"Τάλαρος Αντώνης",ck:41,ca:40,ct:38.9,gp:12.1},
+  {id:"A7",lbl:"Α7",name:"Τσιτράκη Κατερίνα",ck:65,ca:64,ct:57.3,gp:17.2},
+  {id:"A8",lbl:"Α8",name:"Σαλμονά Σάρα",ck:68,ca:67,ct:70.1,gp:17.5},
+  {id:"B5",lbl:"Β5",name:"Αγγελάκης Μάρκος",ck:86,ca:86,ct:90.3,gp:36.1},
+  {id:"B6",lbl:"Β6",name:"Βαφείδου Ρίτα",ck:86,ca:86,ct:90.3,gp:26.9},
+  {id:"B7",lbl:"Β7",name:"Καρύδης Αλέξανδρος",ck:95,ca:94,ct:95.5,gp:37.2},
+  {id:"G4",lbl:"Γ4",name:"Αντωνιάδου",ck:94,ca:94,ct:95.5,gp:36.1},
+  {id:"G5",lbl:"Γ5",name:"Σκανδάλη Σοφία",ck:95,ca:95,ct:90.3,gp:26.9},
+  {id:"G6",lbl:"Γ6",name:"Κωνσταντίνου Ειρήνη",ck:69,ca:68,ct:67.2,gp:37.2},
+  {id:"D4",lbl:"Δ4",name:"Καμπέρης Βαγγέλης",ck:117,ca:116,ct:117.1,gp:39.8},
+  {id:"D5",lbl:"Δ5",name:"Αζάς Λευτέρης",ck:130,ca:129,ct:137.3,gp:39.8},
+  {id:"AP",lbl:"ΑΠ",name:"Damco",ck:5,ca:15,ct:0,gp:0},
 ];
+const GAS_TOTAL_PAGIO_UNITS=APTS.reduce((s,a)=>s+(a.gp||0),0); // = 348.8
 let FIXED_EXPENSES=[
   {id:"fix1",desc:"Καθαρίστρια",cat:"Καθαρίστρια",amt:114.29,type:"tenant",icon:"🧹"},
   {id:"fix2",desc:"Κηπουρός",cat:"Κηπουρός",amt:177.14,type:"tenant",icon:"🌿"},
@@ -343,11 +344,12 @@ function calcCharge(aptId,p){
     else if(type==="express")tenant+=amt/BUILDING.totalApts;
     else if(type==="mixed"){tenant+=Number(e.amtTenant||0)*apt.ck/1000;owner+=Number(e.amtOwner||0)*apt.ck/1000;}
     else if(type==="gas"){
-      const pm=parseFloat(e.gas_pagio_monad)||GAS_PAGIO_MONAD;
-      const tp=parseFloat(e.gas_total_pagio)||GAS_TOTAL_PAGIO;
-      const ma=parseFloat(e["gas_metab_"+aptId])||0;
-      const tm=parseFloat(e.gas_total_metab)||0;
-      const pagio=amt*GAS_PAGIO*(pm/tp);
+      // Express Home Service: ΠΑΓΙΟ 34,89% (×μονάδες παγίου δ/μα) + ΜΕΤΑΒΛΗΤΟ 65,11% (×ώρες κατανάλωσης)
+      const apt2=getApt(aptId);
+      const gp=apt2.gp||0;                                  // μονάδες παγίου δ/μα (σταθερό)
+      const ma=parseFloat(e["gas_metab_"+aptId])||0;        // ώρες κατανάλωσης δ/μα
+      const tm=parseFloat(e.gas_total_metab)||0;            // σύνολο ωρών
+      const pagio=amt*GAS_PAGIO*(gp/GAS_TOTAL_PAGIO_UNITS);
       const metab=(ma>0&&tm>0)?amt*GAS_METAB*(ma/tm):0;
       tenant+=pagio+metab;
     }
@@ -610,13 +612,10 @@ function openExpF(dbType,editId){
   h+=`<div class="fg"><label class="fl">Ημερομηνία</label><input id="eDateM" class="fi" type="date" value="${ex?.date||new Date().toISOString().slice(0,10)}"></div></div>`;
   if(dbType==="ke"){
     h+=`<div id="gasF" style="display:${isGas?"block":"none"};background:var(--dk3);border-radius:8px;padding:10px;margin-bottom:10px">`;
-    h+=`<div style="font-size:10px;color:var(--gd);margin-bottom:8px;font-weight:600">🔥 Στοιχεία Αερίου (από τιμολόγιο)</div>`;
-    h+=`<div class="fg2"><div class="fg"><label class="fl">Σύνολο Μονάδων Παγίου</label><input id="eTotP" class="fi" type="number" step="0.1" value="${ex?.gas_total_pagio||GAS_TOTAL_PAGIO}" placeholder="π.χ. 348.8"></div>`;
-    h+=`<div class="fg"><label class="fl">Μονάδες Παγίου Δ/μα</label><input id="ePagMon" class="fi" type="number" step="0.1" value="${ex?.gas_pagio_monad||GAS_PAGIO_MONAD}" placeholder="π.χ. 22.0"></div></div>`;
-    h+=`<div class="fg"><label class="fl">Σύνολο Μονάδων Μεταβλητού</label><input id="eTotM" class="fi" type="number" step="0.1" value="${ex?.gas_total_metab||""}" placeholder="π.χ. 5251.2" oninput="calcGasTotal()"></div>`;
-    h+=`<div style="font-size:10px;color:var(--tx3);margin:6px 0 8px;border-top:1px solid var(--br);padding-top:6px">Μονάδες ανά διαμέρισμα — <span id="gasSumLbl" style="color:var(--gd)">άθροισμα: 0</span></div>`;
-    APTS.forEach(a=>{if(a.id==="AP")return;h+=`<div class="fg"><label class="fl">${a.lbl} — ${getAptName(a.id)}</label><input id="eG_${a.id}" class="fi" type="number" step="0.1" value="${ex?.["gas_metab_"+a.id]||0}" placeholder="0" oninput="calcGasTotal()"></div>`;});
-    h+=`<div id="gasSumAlert" style="display:none;background:rgba(239,68,68,0.1);border:1px solid var(--rd);border-radius:6px;padding:7px;font-size:11px;color:var(--rd);margin-top:4px">⚠️ Το άθροισμα των διαμερισμάτων δεν συμφωνεί με το Σύνολο Μεταβλητού!</div>`;
+    h+=`<div style="font-size:10px;color:var(--gd);margin-bottom:6px;font-weight:600">🔥 Μετρήσεις Αερίου</div>`;
+    h+=`<div style="font-size:10px;color:var(--tx3);margin-bottom:8px">Πάγιο 34,89% (σταθερά χιλιοστά) + Μεταβλητό 65,11% (ώρες κατανάλωσης). Βάλε τις <b>ώρες</b> κάθε δ/μα.</div>`;
+    h+=`<div style="font-size:10px;color:var(--tx3);margin:6px 0 8px;border-top:1px solid var(--br);padding-top:6px">Σύνολο ωρών: <span id="gasSumLbl" style="color:var(--gd);font-weight:600">0</span></div>`;
+    APTS.forEach(a=>{if(a.id==="AP")return;h+=`<div class="fg"><label class="fl">${a.lbl} — ${getAptName(a.id)} <span style="color:var(--tx3)">(πάγιο ${a.gp})</span></label><input id="eG_${a.id}" class="fi" type="number" step="0.1" value="${ex?.["gas_metab_"+a.id]||0}" placeholder="ώρες" oninput="calcGasTotal()"></div>`;});
     h+=`</div>`;
   }
   h+=`<button class="btn bp bblk" onclick="saveExp('${dbType}','${editId||""}')">✓ Αποθήκευση</button>`;
@@ -634,9 +633,8 @@ function getTypeChipHtml(type){
 }
 function calcGasTotal(){
   let sum=0;APTS.forEach(a=>{if(a.id==="AP")return;const el=document.getElementById("eG_"+a.id);if(el)sum+=parseFloat(el.value)||0;});
-  const lbl=document.getElementById("gasSumLbl");const totM=parseFloat(document.getElementById("eTotM")?.value)||0;const alert=document.getElementById("gasSumAlert");
-  if(lbl)lbl.textContent="άθροισμα: "+sum.toFixed(1);
-  if(alert){const diff=Math.abs(sum-totM);alert.style.display=(totM>0&&diff>0.5)?"block":"none";if(lbl)lbl.style.color=diff>0.5?"var(--rd)":"var(--gn)";}
+  const lbl=document.getElementById("gasSumLbl");
+  if(lbl)lbl.textContent=sum.toFixed(1);
 }
 function onCatCh(cat,dbType){
   const d=document.getElementById("eDesc");if(d&&(!d.value||d.value===document.getElementById("eCat").dataset.prev))d.value=cat;
@@ -661,17 +659,14 @@ async function saveExp(dbType,editId){
     e.amount=parseFloat(amt);e.date=document.getElementById("eDate").value;
   }
   if(cat==="Φυσικό Αέριο"){
-    const totM=parseFloat(document.getElementById("eTotM").value);const totP=parseFloat(document.getElementById("eTotP").value);const pagMon=parseFloat(document.getElementById("ePagMon").value);
-    if(!totM||totM<=0){flash(lang==="el"?"Βάλε Σύνολο Μεταβλητού":"Enter Total Variable units","er");return;}
-    if(!totP||totP<=0){flash(lang==="el"?"Βάλε Σύνολο Παγίου":"Enter Total Fixed units","er");return;}
-    if(!pagMon||pagMon<=0){flash(lang==="el"?"Βάλε Μονάδες Παγίου Δ/μα":"Enter Fixed units for apartment","er");return;}
-    e.gas_total_metab=totM;e.gas_total_pagio=totP;e.gas_pagio_monad=pagMon;
+    // Σύνολο μονάδων = άθροισμα όλων των διαμερισμάτων (όπως το Excel)
     let sumMetab=0;APTS.forEach(a=>{const el=document.getElementById("eG_"+a.id);if(el){const v=parseFloat(el.value)||0;e["gas_metab_"+a.id]=v;sumMetab+=v;}});
-    if(Math.abs(sumMetab-totM)>0.5){if(!confirm("Το άθροισμα μονάδων ("+sumMetab.toFixed(1)+") δεν συμφωνεί με το σύνολο ("+totM+"). Συνέχεια;"))return;}
+    if(sumMetab<=0){flash(lang==="el"?"Βάλε μονάδες κατανάλωσης":"Enter consumption units","er");return;}
+    e.gas_total_metab=sumMetab;
   }
   const table=dbType==="ce"?"central_expenses":"core_expenses";
   const row={description:e.description,category:e.category,amount:e.amount,period:e.period,date:e.date||null,created_at:e.createdAt,amt_tenant:e.amtTenant||null,amt_owner:e.amtOwner||null};
-  if(dbType==="ke"){row.gas_total_metab=e.gas_total_metab||null;row.gas_total_pagio=e.gas_total_pagio||null;row.gas_pagio_monad=e.gas_pagio_monad||null;}
+  if(dbType==="ke"){row.gas_total_metab=e.gas_total_metab||null;}
   let expId=editId;
   if(editId){await sbUpdate(table,editId,row);}else{const ins=await sbInsert(table,row);expId=ins?.id;}
   if(dbType==="ke"&&expId&&e.category==="Φυσικό Αέριο"){
@@ -736,7 +731,7 @@ function printNotice(aptId){
     if(type==="mixed"){const st=Number(e.amtTenant||0)*apt.ck/1000;const so=Number(e.amtOwner||0)*apt.ck/1000;if(st>0.005)tenRows+=`<tr><td>${e.description}</td><td style="color:#888;font-size:10px">${apt.ck}‰</td><td>${st.toFixed(2)} €</td></tr>`;if(so>0.005)ownRows+=`<tr><td>${e.description}</td><td style="color:#888;font-size:10px">${apt.ck}‰</td><td>${so.toFixed(2)} €</td></tr>`;return;}
     const amt=Number(e.amount);let share=0;
     if(type==="tenant")share=amt*apt.ck/1000;else if(type==="asan")share=amt*apt.ca/1000;else if(type==="express")share=amt/BUILDING.totalApts;
-    else if(type==="gas"){const pm=Number(e.gas_pagio_monad)>0?Number(e.gas_pagio_monad):GAS_PAGIO_MONAD;const tp=Number(e.gas_total_pagio)>0?Number(e.gas_total_pagio):GAS_TOTAL_PAGIO;const ma=Number(e["gas_metab_"+aptId])||0;const tm=Number(e.gas_total_metab)>0?Number(e.gas_total_metab):1;share=amt*GAS_PAGIO*(pm/tp)+(ma>0?amt*GAS_METAB*(ma/tm):0);}
+    else if(type==="gas"){const gp=apt.gp||0;const ma=Number(e["gas_metab_"+aptId])||0;const tm=Number(e.gas_total_metab)>0?Number(e.gas_total_metab):1;share=amt*GAS_PAGIO*(gp/GAS_TOTAL_PAGIO_UNITS)+(ma>0?amt*GAS_METAB*(ma/tm):0);}
     else if(type==="owner")share=amt*apt.ck/1000;
     if(share<0.005)return;
     const hint=type==="express"?"÷"+BUILDING.totalApts:type==="gas"?"Gas":type==="asan"?apt.ca+"‰":apt.ck+"‰";
